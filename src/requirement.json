@@ -1,0 +1,614 @@
+[
+  {
+    "id": 1,
+    "item": "Cover page",
+    "category": "Cover page",
+    "subcategory": "In Process",
+    "quantity": "18",
+    "unit": "5"
+    
+  },
+  {
+    "id": 2,
+    "item": "Table of contents",
+    "category": "Table of contents",
+    "subcategory": "Done",
+    "quantity": "29",
+    "unit": "24"
+    
+  },
+  {
+    "id": 3,
+    "item": "Executive summary",
+    "category": "Narrative",
+    "subcategory": "Done",
+    "quantity": "10",
+    "unit": "13"
+    
+  },
+  {
+    "id": 4,
+    "item": "Technical approach",
+    "category": "Narrative",
+    "subcategory": "Done",
+    "quantity": "27",
+    "unit": "23"
+    
+  },
+  {
+    "id": 5,
+    "item": "Design",
+    "category": "Narrative",
+    "subcategory": "In Process",
+    "quantity": "2",
+    "unit": "16"
+    
+  },
+  {
+    "id": 6,
+    "item": "Capabilities",
+    "category": "Narrative",
+    "subcategory": "In Process",
+    "quantity": "20",
+    "unit": "8"
+    
+  },
+  {
+    "id": 7,
+    "item": "Integration with existing systems",
+    "category": "Narrative",
+    "subcategory": "In Process",
+    "quantity": "19",
+    "unit": "21"
+    
+  },
+  {
+    "id": 8,
+    "item": "Innovation and Advantages",
+    "category": "Narrative",
+    "subcategory": "Done",
+    "quantity": "25",
+    "unit": "26"
+    
+  },
+  {
+    "id": 9,
+    "item": "Overview of EMR's Innovative Solutions",
+    "category": "Technical content",
+    "subcategory": "Done",
+    "quantity": "7",
+    "unit": "23"
+    
+  },
+  {
+    "id": 10,
+    "item": "Advanced Algorithms and Machine Learning",
+    "category": "Narrative",
+    "subcategory": "Done",
+    "quantity": "30",
+    "unit": "28"
+    
+  },
+  {
+    "id": 11,
+    "item": "Adaptive Communication Protocols",
+    "category": "Narrative",
+    "subcategory": "Done",
+    "quantity": "9",
+    "unit": "31"
+    
+  },
+  {
+    "id": 12,
+    "item": "Advantages Over Current Technologies",
+    "category": "Narrative",
+    "subcategory": "Done",
+    "quantity": "12",
+    "unit": "0"
+    
+  },
+  {
+    "id": 13,
+    "item": "Past Performance",
+    "category": "Narrative",
+    "subcategory": "Done",
+    "quantity": "22",
+    "unit": "33"
+    
+  },
+  {
+    "id": 14,
+    "item": "Customer Feedback and Satisfaction Levels",
+    "category": "Narrative",
+    "subcategory": "Done",
+    "quantity": "15",
+    "unit": "34"
+    
+  },
+  {
+    "id": 15,
+    "item": "Implementation Challenges and Solutions",
+    "category": "Narrative",
+    "subcategory": "Done",
+    "quantity": "3",
+    "unit": "35"
+    
+  },
+  {
+    "id": 16,
+    "item": "Security Measures and Data Protection Policies",
+    "category": "Narrative",
+    "subcategory": "In Process",
+    "quantity": "6",
+    "unit": "36"
+    
+  },
+  {
+    "id": 17,
+    "item": "Scalability and Future Proofing",
+    "category": "Narrative",
+    "subcategory": "Done",
+    "quantity": "4",
+    "unit": "37"
+    
+  },
+  {
+    "id": 18,
+    "item": "Cost-Benefit Analysis",
+    "category": "Plain language",
+    "subcategory": "Done",
+    "quantity": "14",
+    "unit": "38"
+    
+  },
+  {
+    "id": 19,
+    "item": "User Training and Onboarding Experience",
+    "category": "Narrative",
+    "subcategory": "Done",
+    "quantity": "17",
+    "unit": "39"
+    
+  },
+  {
+    "id": 20,
+    "item": "Future Development Roadmap",
+    "category": "Narrative",
+    "subcategory": "Done",
+    "quantity": "11",
+    "unit": "40"
+    
+  },
+  {
+    "id": 21,
+    "item": "System Architecture Overview",
+    "category": "Technical content",
+    "subcategory": "In Process",
+    "quantity": "24",
+    "unit": "18"
+    
+  },
+  {
+    "id": 22,
+    "item": "Risk Management Plan",
+    "category": "Narrative",
+    "subcategory": "Done",
+    "quantity": "15",
+    "unit": "22"
+    
+  },
+  {
+    "id": 23,
+    "item": "Compliance Documentation",
+    "category": "Legal",
+    "subcategory": "In Process",
+    "quantity": "31",
+    "unit": "27"
+    
+  },
+  {
+    "id": 24,
+    "item": "API Documentation",
+    "category": "Technical content",
+    "subcategory": "Done",
+    "quantity": "8",
+    "unit": "12"
+    
+  },
+  {
+    "id": 25,
+    "item": "User Interface Mockups",
+    "category": "Visual",
+    "subcategory": "In Process",
+    "quantity": "19",
+    "unit": "25"
+    
+  },
+  {
+    "id": 26,
+    "item": "Database Schema",
+    "category": "Technical content",
+    "subcategory": "Done",
+    "quantity": "22",
+    "unit": "20"
+    
+  },
+  {
+    "id": 27,
+    "item": "Testing Methodology",
+    "category": "Technical content",
+    "subcategory": "In Process",
+    "quantity": "17",
+    "unit": "14"
+    
+  },
+  {
+    "id": 28,
+    "item": "Deployment Strategy",
+    "category": "Narrative",
+    "subcategory": "Done",
+    "quantity": "26",
+    "unit": "30"
+    
+  },
+  {
+    "id": 29,
+    "item": "Budget Breakdown",
+    "category": "Financial",
+    "subcategory": "In Process",
+    "quantity": "13",
+    "unit": "16"
+    
+  },
+  {
+    "id": 30,
+    "item": "Market Analysis",
+    "category": "Research",
+    "subcategory": "Done",
+    "quantity": "29",
+    "unit": "32"
+    
+  },
+  {
+    "id": 31,
+    "item": "Competitor Comparison",
+    "category": "Research",
+    "subcategory": "In Process",
+    "quantity": "21",
+    "unit": "19"
+    
+  },
+  {
+    "id": 32,
+    "item": "Maintenance Plan",
+    "category": "Technical content",
+    "subcategory": "Done",
+    "quantity": "16",
+    "unit": "23"
+    
+  },
+  {
+    "id": 33,
+    "item": "User Personas",
+    "category": "Research",
+    "subcategory": "In Process",
+    "quantity": "27",
+    "unit": "24"
+    
+  },
+  {
+    "id": 34,
+    "item": "Accessibility Compliance",
+    "category": "Legal",
+    "subcategory": "Done",
+    "quantity": "18",
+    "unit": "21"
+    
+  },
+  {
+    "id": 35,
+    "item": "Performance Metrics",
+    "category": "Technical content",
+    "subcategory": "In Process",
+    "quantity": "23",
+    "unit": "26"
+    
+  },
+  {
+    "id": 36,
+    "item": "Disaster Recovery Plan",
+    "category": "Technical content",
+    "subcategory": "Done",
+    "quantity": "14",
+    "unit": "17"
+    
+  },
+  {
+    "id": 37,
+    "item": "Third-party Integrations",
+    "category": "Technical content",
+    "subcategory": "In Process",
+    "quantity": "25",
+    "unit": "28"
+    
+  },
+  {
+    "id": 38,
+    "item": "User Feedback Summary",
+    "category": "Research",
+    "subcategory": "Done",
+    "quantity": "20",
+    "unit": "15"
+    
+  },
+  {
+    "id": 39,
+    "item": "Localization Strategy",
+    "category": "Narrative",
+    "subcategory": "In Process",
+    "quantity": "12",
+    "unit": "19"
+    
+  },
+  {
+    "id": 40,
+    "item": "Mobile Compatibility",
+    "category": "Technical content",
+    "subcategory": "Done",
+    "quantity": "28",
+    "unit": "31"
+    
+  },
+  {
+    "id": 41,
+    "item": "Data Migration Plan",
+    "category": "Technical content",
+    "subcategory": "In Process",
+    "quantity": "19",
+    "unit": "22"
+    
+  },
+  {
+    "id": 42,
+    "item": "Quality Assurance Protocols",
+    "category": "Technical content",
+    "subcategory": "Done",
+    "quantity": "30",
+    "unit": "33"
+    
+  },
+  {
+    "id": 43,
+    "item": "Stakeholder Analysis",
+    "category": "Research",
+    "subcategory": "In Process",
+    "quantity": "11",
+    "unit": "14"
+    
+  },
+  {
+    "id": 44,
+    "item": "Environmental Impact Assessment",
+    "category": "Research",
+    "subcategory": "Done",
+    "quantity": "24",
+    "unit": "27"
+    
+  },
+  {
+    "id": 45,
+    "item": "Intellectual Property Rights",
+    "category": "Legal",
+    "subcategory": "In Process",
+    "quantity": "17",
+    "unit": "20"
+    
+  },
+  {
+    "id": 46,
+    "item": "Customer Support Framework",
+    "category": "Narrative",
+    "subcategory": "Done",
+    "quantity": "22",
+    "unit": "25"
+    
+  },
+  {
+    "id": 47,
+    "item": "Version Control Strategy",
+    "category": "Technical content",
+    "subcategory": "In Process",
+    "quantity": "15",
+    "unit": "18"
+    
+  },
+  {
+    "id": 48,
+    "item": "Continuous Integration Pipeline",
+    "category": "Technical content",
+    "subcategory": "Done",
+    "quantity": "26",
+    "unit": "29"
+    
+  },
+  {
+    "id": 49,
+    "item": "Regulatory Compliance",
+    "category": "Legal",
+    "subcategory": "In Process",
+    "quantity": "13",
+    "unit": "16"
+    
+  },
+  {
+    "id": 50,
+    "item": "User Authentication System",
+    "category": "Technical content",
+    "subcategory": "Done",
+    "quantity": "28",
+    "unit": "31"
+    
+  },
+  {
+    "id": 51,
+    "item": "Data Analytics Framework",
+    "category": "Technical content",
+    "subcategory": "In Process",
+    "quantity": "21",
+    "unit": "24"
+    
+  },
+  {
+    "id": 52,
+    "item": "Cloud Infrastructure",
+    "category": "Technical content",
+    "subcategory": "Done",
+    "quantity": "16",
+    "unit": "19"
+    
+  },
+  {
+    "id": 53,
+    "item": "Network Security Measures",
+    "category": "Technical content",
+    "subcategory": "In Process",
+    "quantity": "29",
+    "unit": "32"
+    
+  },
+  {
+    "id": 54,
+    "item": "Project Timeline",
+    "category": "Planning",
+    "subcategory": "Done",
+    "quantity": "14",
+    "unit": "17"
+    
+  },
+  {
+    "id": 55,
+    "item": "Resource Allocation",
+    "category": "Planning",
+    "subcategory": "In Process",
+    "quantity": "27",
+    "unit": "30"
+    
+  },
+  {
+    "id": 56,
+    "item": "Team Structure and Roles",
+    "category": "Planning",
+    "subcategory": "Done",
+    "quantity": "20",
+    "unit": "23"
+    
+  },
+  {
+    "id": 57,
+    "item": "Communication Protocols",
+    "category": "Planning",
+    "subcategory": "In Process",
+    "quantity": "15",
+    "unit": "18"
+    
+  },
+  {
+    "id": 58,
+    "item": "Success Metrics",
+    "category": "Planning",
+    "subcategory": "Done",
+    "quantity": "30",
+    "unit": "33"
+    
+  },
+  {
+    "id": 59,
+    "item": "Internationalization Support",
+    "category": "Technical content",
+    "subcategory": "In Process",
+    "quantity": "23",
+    "unit": "26"
+    
+  },
+  {
+    "id": 60,
+    "item": "Backup and Recovery Procedures",
+    "category": "Technical content",
+    "subcategory": "Done",
+    "quantity": "18",
+    "unit": "21"
+    
+  },
+  {
+    "id": 61,
+    "item": "Monitoring and Alerting System",
+    "category": "Technical content",
+    "subcategory": "In Process",
+    "quantity": "25",
+    "unit": "28"
+    
+  },
+  {
+    "id": 62,
+    "item": "Code Review Guidelines",
+    "category": "Technical content",
+    "subcategory": "Done",
+    "quantity": "12",
+    "unit": "15"
+    
+  },
+  {
+    "id": 63,
+    "item": "Documentation Standards",
+    "category": "Technical content",
+    "subcategory": "In Process",
+    "quantity": "27",
+    "unit": "30"
+    
+  },
+  {
+    "id": 64,
+    "item": "Release Management Process",
+    "category": "Planning",
+    "subcategory": "Done",
+    "quantity": "22",
+    "unit": "25"
+    
+  },
+  {
+    "id": 65,
+    "item": "Feature Prioritization Matrix",
+    "category": "Planning",
+    "subcategory": "In Process",
+    "quantity": "19",
+    "unit": "22"
+    
+  },
+  {
+    "id": 66,
+    "item": "Technical Debt Assessment",
+    "category": "Technical content",
+    "subcategory": "Done",
+    "quantity": "24",
+    "unit": "27"
+    
+  },
+  {
+    "id": 67,
+    "item": "Capacity Planning",
+    "category": "Planning",
+    "subcategory": "In Process",
+    "quantity": "21",
+    "unit": "24"
+    
+  },
+  {
+    "id": 68,
+    "item": "Service Level Agreements",
+    "category": "Legal",
+    "subcategory": "Done",
+    "quantity": "26",
+    "unit": "29"
+    
+  }
+]

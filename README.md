@@ -12,7 +12,7 @@
 pages : 
   - delivery section i.e orders showing the users
     - with orders 
-    - generating the bill when delivery out - last due - last payment date - current bill, total due.
+    - generating the bill when delivery out 
   - all users sections 
     - their information and instruction - preferences , categorizing them their.
   - updating the items - i.e stock management and creation
@@ -37,6 +37,7 @@ Audit Logs / Activity - (user activity)
 Delivery Tracking or Notes
     Add delivery notes (e.g., "Left at gate")
     Status timeline (e.g., Ordered → Packed → Out for Delivery → Delivered)
+
 Reports / Export
     Daily sales report
     Export to CSV for accounting
@@ -50,11 +51,18 @@ Tech Stack for MVP
     Charting (optional): Recharts or Chart.js
     authenticating on the server side -- storing the data in the cookies or jwt tokens.
 
-V2 
-  Optional: Sub-admin roles (e.g., stock manager vs. delivery person)
+# V2
+ 
+- Optional: Sub-admin roles (e.g., stock manager vs. delivery person)
 
-Notifications / Alerts
+- Notifications / Alerts
     Payment due alerts
     New order placed
+- last due - last payment date - current bill, total due.
+
+- ability to see the current bill in the frontend user app quikcrats
+
+- inventory work management 
 
 - [  ] return back and forth for the return items -- raise the issue with the previous bills.
+- pagination and caching of the data - table data

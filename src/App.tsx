@@ -1,35 +1,40 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ThemeProvider } from './customUI/theme-provider';
+import { Layout } from './pages/layout';
+import { Dashboard } from './pages/dashboard';
+import { NotFound } from './pages/notFound';
+import { Price } from './pages/price';
+import { Items } from './pages/items';
+import { Builtin } from './pages/builtin';
+import { Orders } from './pages/orders';
+import { Customer } from './pages/customer';
+import {Help, Login, Setting} from "./pages/login"
 
 function App() {
-  const [count, setCount] = useState(0)
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+  return  <div className="dark:bg-black dark:text-white bg-(--foreground-color) text-black w-screen h-screen sm:overflow-hidden">
+  <ThemeProvider>
+    <Router>
+    <Routes>
+    <Route path='/' element={<Layout></Layout>}>
+
+      <Route index element={<Dashboard></Dashboard>}></Route>
+      <Route path='/pricelist' element={<Price></Price>}></Route>
+      <Route path='/itemlist' element={<Items></Items>}></Route>
+      <Route path='/builtinlist' element={<Builtin></Builtin>}></Route>
+      <Route path='/orderlist' element={<Orders></Orders>}></Route>
+      <Route path='/customerlist' element={<Customer></Customer>}></Route>
+      <Route path='/login' element={<Login></Login>}></Route>
+      <Route path='/help' element={<Help></Help>}></Route>
+      <Route path='/setting' element={<Setting></Setting>}></Route>
+    </Route>
+      <Route path="*" element={<NotFound></NotFound>}></Route>
+    </Routes>
+    </Router>
+  </ThemeProvider>
+  </div> 
 }
+
 
 export default App
