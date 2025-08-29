@@ -1,0 +1,170 @@
+[
+  {
+    "id": 1,
+    "item": "Cover page",
+    "category": "low",
+    "mrp": "18",
+    "discountPrice": "5"
+    
+  },
+  {
+    "id": 2,
+    "item": "Table of contents",
+    "category": "low",
+    "mrp": "29",
+    "discountPrice": "24"
+    
+  },
+  {
+    "id": 3,
+    "item": "Executive summary",
+    "category": "low",
+    "mrp": "10",
+    "discountPrice": "13"
+    
+  },
+  {
+    "id": 4,
+    "item": "Technical approach",
+    "category": "low",
+    "mrp": "27",
+    "discountPrice": "23"
+    
+  },
+  {
+    "id": 5,
+    "item": "Design",
+    "category": "low",
+    "mrp": "2",
+    "discountPrice": "16"
+    
+  },
+  {
+    "id": 6,
+    "item": "Capabilities",
+    "category": "low",
+    "mrp": "20",
+    "discountPrice": "8"
+    
+  },
+  {
+    "id": 7,
+    "item": "Integration with existing systems",
+    "category": "low",
+    "mrp": "19",
+    "discountPrice": "21"
+    
+  },
+  {
+    "id": 8,
+    "item": "Innovation and Advantages",
+    "category": "medium",
+    "mrp": "25",
+    "discountPrice": "26"
+    
+  },
+  {
+    "id": 9,
+    "item": "Overview of EMR's Innovative Solutions",
+    "category": "medium",
+    "mrp": "7",
+    "discountPrice": "23"
+    
+  },
+  {
+    "id": 10,
+    "item": "Advanced Algorithms and Machine Learning",
+    "category": "medium",
+    "mrp": "30",
+    "discountPrice": "28"
+    
+  },
+  {
+    "id": 11,
+    "item": "Adaptive Communication Protocols",
+    "category": "medium",
+    "mrp": "9",
+    "discountPrice": "31"
+    
+  },
+  {
+    "id": 12,
+    "item": "Advantages Over Current Technologies",
+    "category": "medium",
+    "mrp": "12",
+    "discountPrice": "0"
+    
+  },
+  {
+    "id": 13,
+    "item": "Past Performance",
+    "category": "medium",
+    "mrp": "22",
+    "discountPrice": "33"
+    
+  },
+  {
+    "id": 14,
+    "item": "Customer Feedback and Satisfaction Levels",
+    "category": "medium",
+    "mrp": "15",
+    "discountPrice": "34"
+    
+  },
+  {
+    "id": 15,
+    "item": "Implementation Challenges and Solutions",
+    "category": "high",
+    "mrp": "3",
+    "discountPrice": "35"
+    
+  },
+  {
+    "id": 16,
+    "item": "Security Measures and Data Protection Policies",
+    "category": "high",
+    "mrp": "6",
+    "discountPrice": "36"
+    
+  },
+  {
+    "id": 17,
+    "item": "Scalability and Future Proofing",
+    "category": "high",
+    "mrp": "4",
+    "discountPrice": "37"
+    
+  },
+  {
+    "id": 18,
+    "item": "Cost-Benefit Analysis",
+    "category": "high",
+    "mrp": "14",
+    "discountPrice": "38"
+    
+  },
+  {
+    "id": 19,
+    "item": "User Training and Onboarding Experience",
+    "category": "high",
+    "mrp": "17",
+    "discountPrice": "39"
+    
+  },
+  {
+    "id": 20,
+    "item": "Future Development Roadmap",
+    "category": "high",
+    "mrp": "11",
+    "discountPrice": "40"
+    
+  },
+  {
+    "id": 21,
+    "item": "Future Development Roadmap",
+    "category": "high",
+    "mrp": "11",
+    "discountPrice": "40"
+    
+  }
+]

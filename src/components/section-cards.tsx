@@ -58,14 +58,14 @@ export function SectionCards() {
           </CardTitle>
           <CardAction>
             <Badge variant="outline">
-               <Trend value={cardList[3].trend}></Trend>
+               <Trend value={cardList[0].trend}></Trend>
               {cardList[0].change}%
             </Badge>
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            {cardList[0].message}  <Trend value={cardList[3].trend}></Trend>
+            {cardList[0].message}  <Trend value={cardList[0].trend}></Trend>
           </div>
           <div className="text-muted-foreground">
            {cardList[0].footerNote}

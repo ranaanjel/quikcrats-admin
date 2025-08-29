@@ -29,7 +29,7 @@ export function NavMain({
             let classNameActive = "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground min-w-8 duration-200 ease-linear"
 
             return (
-              <Link to={item.url}>
+              <Link to={item.url} key={item.title}>
               <SidebarMenuItem key={item.title} >
                 <SidebarMenuButton tooltip={item.title} className={pathValue == item.url ? classNameActive : ""}>
                   {item.icon && <item.icon />}

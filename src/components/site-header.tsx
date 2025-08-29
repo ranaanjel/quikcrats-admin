@@ -2,6 +2,7 @@ import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { useLocation } from "react-router-dom"
 
+import { ModeToggle } from "@/customUI/mode-toggle";
 export function SiteHeader() {
   let pathname = useLocation().pathname;
 
@@ -22,22 +23,4 @@ export function SiteHeader() {
       </div>
     </header>
   )
-}
-import {  ShoppingCart } from "lucide-react";
-import { ModeToggle } from "@/customUI/mode-toggle";
-
-export function Header() {
-    return <div className="w-full p-8 pb-4">
-       <div className="flex justify-between">
-        <div className="flex gap-2">
-          <ShoppingCart></ShoppingCart>
-          <div className="text-xl font-semibold">
-            quikcrats
-          </div>
-        </div>
-        <div className="flex gap-4 items-center">
-        
-        </div>
-        </div> 
-    </div>
 }
