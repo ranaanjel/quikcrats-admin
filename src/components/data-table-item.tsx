@@ -1,6 +1,6 @@
 import * as React from "react"
 
-import { file, object, z } from "zod"
+import { z } from "zod"
 import { toast, Toaster } from "sonner"
 
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -65,173 +65,6 @@ export const itemRequiredSchema = z.object({
 
 // Create a separate component for the drag handle
 
-const pendingOrderColumns = [{
-  accessorKey: "order id",
-  header: "Order Id",
-  classValue: "w-32"
-},
-{
-  accessorKey: "customer name",
-  header: "Customer",
-  classValue: "w-32"
-},
-{
-  accessorKey: "order value",
-  header: "Order value",
-  classValue: "w-32"
-},
-// {
-//   accessorKey: "delivery date",
-//   header: "Delivery date",
-//   classValue:"w-32"
-// },
-// {
-//   accessorKey: "delivery timing",
-//   header: "Delivery timing",
-//   classValue:"w-16"
-// },
-// {
-//   accessorKey: "address",
-//   header: "Address",
-//   classValue:"w-32"
-// },
-{
-  accessorKey: "zone",
-  header: "Zone",
-  classValue: "w-16"
-},
-// {
-//   accessorKey: "instruction",
-//   header: "Instruction",
-//   classValue:"w-32"
-
-// }, 
-{
-  accessorKey: "delivery status",
-  header: "D-Status",
-  classValue: "w-16"
-},
-{
-  accessorKey: "order status",
-  header: "O-Status",
-  classValue: "w-16"
-},
-
-]
-const itemRequirementColumns = [
-
-  {
-    accessorKey: "item name",
-    header: "Item name",
-    classValue: "w-78"
-  },
-  {
-    accessorKey: "category",
-    header: "Category",
-    classValue: "w-64"
-  },
-  {
-    accessorKey: "subcategory",
-    header: "Subcategory",
-    classValue: "w-64"
-  },
-  {
-    accessorKey: "quantity",
-    header: "Quantity",
-    classValue: "w-64"
-  },
-  {
-    accessorKey: "Unit",
-    header: "Unit",
-    classValue: "w-32"
-  },
-];
-// Create a separate component for the drag handle
-//TODO recoil currently doing only the checkup
-
-
-const itemColumns = [{
-  header: "Image url",
-  edit: true,
-},
-{
-  header: "Item name",
-  edit: false
-},
-{
-  header: "App url",
-  edit: true,
-},
-{
-  header: "Disclaimer",
-  edit: true
-}, {
-  header: "Brand",
-  edit: true
-}, {
-  header: "category",
-  edit: false
-}, {
-  header: "subcategory",
-  edit: false
-}, {
-  header: "productinfo",
-  edit: true
-}, {
-  header: "quantity",
-  edit: true
-}, {
-  header: "primary size",
-  edit: true
-}, {
-  accessorKey: "primary unit",
-  edit: true
-}, {
-  header: "secondary size",
-  edit: true
-}, {
-  header: "secondary unit",
-  edit: true
-}, {
-  header: "conversion",
-  edit: true
-}, {
-  header: "price",
-  edit: false
-}, {
-  header: "discount",
-  edit: false
-},
-{
-  header: "saving amount",
-  edit: false
-},
-{
-  header: "offer",
-  edit: true
-},
-{
-  header: "out of stock",
-  edit: true
-},
-{
-  header: "coming soon",
-  edit: true
-},
-{
-  header: "max order",
-  edit: true
-},
-{
-  header: "regex",
-  edit: true
-},
-{
-  header: "inventory in house",
-  edit: true
-}
-
-]
 
 
 import { IconPlus } from "@tabler/icons-react"
@@ -242,7 +75,6 @@ import { Checkbox } from "./ui/checkbox"
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog"
 import { Input } from "./ui/input"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./ui/accordion"
-import { set } from "mongoose"
 
 
 
@@ -1437,7 +1269,7 @@ function BulkCreate() {
     finalData.map((m,key) => {
       let dataFinal = Object.entries(m);
 
-      return <AccordionItem value={String(key+1)}>
+      return <AccordionItem value={String(key+1)} key={key}>
         <AccordionTrigger>{m.name}</AccordionTrigger>
         <AccordionContent className="flex flex-col gap-1   text-balance">
          {

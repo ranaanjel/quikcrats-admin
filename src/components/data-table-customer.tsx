@@ -1,7 +1,6 @@
 import * as React from "react"
 
 import { z } from "zod"
-import { toast, Toaster } from "sonner"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Badge } from "@/components/ui/badge"
@@ -75,33 +74,24 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import { Input } from "./ui/input"
 
 export function DataTable() {
-  const [preorderList, setPreorderList] = React.useState([{ title: "", description: "", imageURL: "", buttonURL: "", iconURL: "", bgTitleColor:"", bgBodyColor:"", preorderListDataId:"",list:[],id:"" }]);
-  const [bannerList, setBannerList] = React.useState([{ title: "", text: "", buttonURL: "", imageURL: "", gradientColor: "" }]);
-
-  const pendingDataRef = React.useRef<HTMLButtonElement>(null)
-  const itemRequirementRef = React.useRef<HTMLButtonElement>(null);
+  const [customerList, setCustomerList] = React.useState([{ id: "", contact: { name: "", email: "", phoneNo: "" }, restaurantName: "", preferences: "", active: false, categoryPricing: { categoryName: "" , _id:""} }]);
 
   // const clearTimeRef: React.RefObject<ReturnType<typeof setTimeout> | undefined> = React.useRef(undefined)
 
-  let [gotData, setGotData] = React.useState<any[]>([]);
-  let [filterGotData, setFilterGotData] = React.useState<any>([])
+  let [filterCustomer, setFilterCustomer] = React.useState([{ id: "", contact: { name: "", email: "", phoneNo: "" }, restaurantName: "", preferences: "", active: false, categoryPricing: { categoryName: "" , _id:""} }])
 
 
   React.useEffect(function () {
     // getting all the items from the backend 
-    fetch(BACKEND_URL + "adsbanner").then(async (m) => {
+    fetch(BACKEND_URL + "customerData").then(async (m) => {
       let data = await m.json()
-      setBannerList(data.banner)
+
+      setCustomerList(data.value);
+      setFilterCustomer(data.value);
+
       // keeping this data in the react.useMemo for lifecycle of component.
     }).catch(err => console.log(err))
-    fetch(BACKEND_URL + "defaultpreorder").then(async (m) => {
-      let data = await m.json()
-      setPreorderList(data.defaultValue)
-      // keeping this data in the react.useMemo for lifecycle of component.
-    }).catch(err => console.log(err)) 
-
   }, [])
-
 
   return (
     <Tabs
@@ -112,38 +102,66 @@ export function DataTable() {
         <Label htmlFor="view-selector" className="sr-only">
           View
         </Label>
-
         <TabsList className="**:data-[slot=badge]:bg-muted-foreground/30 **:data-[slot=badge]:size-5 **:data-[slot=badge]:rounded-full **:data-[slot=badge]:px-1 @4xl/main:flex">
-          <TabsTrigger ref={itemRequirementRef} value="1">Banner List</TabsTrigger>
-          <TabsTrigger ref={pendingDataRef} value="2">Pre-order List</TabsTrigger>
+          <TabsTrigger value="1">Customers</TabsTrigger>
         </TabsList>
       </div>
       <TabsContent
         value="1"
         className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6"
       >
+        <div className="flex gap-3 items-center">
+
+          <div>
+            Filter Customer
+          </div>
+          <Select onValueChange={function (value) {
+            setFilterCustomer(() => {
+              let filterData = customerList.filter(m => {
+
+                let changingData = ""
+                if(value == "active") {
+                  changingData= "true";
+                }else {
+                  changingData = "false";
+                }
+                return m.active.toString() == changingData;
+              })
+              
+              return filterData;
+            })
+          }}>
+            <SelectTrigger>
+              <SelectValue placeholder="Filter based on Active/Inactive" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={"active"}>active</SelectItem>
+              <SelectItem value={"inactive"}>inactive</SelectItem>
+            </SelectContent>
+          </Select>
+
+        </div>
         <div className="overflow-hidden rounded-lg border">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead >Banner Title</TableHead>
-                <TableHead >Text</TableHead>
-                <TableHead >Data URL</TableHead>
-                <TableHead >Image URL</TableHead>
-                <TableHead >Gradient Color</TableHead>
+                <TableHead >Restaurant Name</TableHead>
+                <TableHead >Customer Contact</TableHead>
+                <TableHead >Preferences</TableHead>
+                <TableHead >Active</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {
-                bannerList.length > 0 ? bannerList.map((m, index) => {
-                  return <TableRow className="" key={m.title + index}>
+                filterCustomer.length > 0 ? filterCustomer.map((m, index) => {
+                  let name = ("name" in m.contact ? m.contact.name : "") + ", " + ("phoneNo" in m.contact ? m.contact.phoneNo : "") + ", " + ("email" in m.contact ? m.contact.email : "");
+                  return <TableRow className="" key={index}>
                     <TableCell className="w-64 capitalize">
-                      <TableCellViewer item={bannerList[index]} />
-                      </TableCell>
-                    <TableCell className="w-64">{m.text}</TableCell>
-                    <TableCell className="w-64">{m.buttonURL}</TableCell>
-                    <TableCell className="w-32"><img width={75} height={75} src={m.imageURL} alt="item-image" /></TableCell>
-                    <TableCell className="w-64">{m.gradientColor}</TableCell>
+                      <TableCellViewer item={customerList[index]} />
+                    </TableCell>
+                    <TableCell className="w-64">{name}</TableCell>
+                    <TableCell className="w-64">{m.preferences}</TableCell>
+                    <TableCell className="w-64"><Badge variant={m.active == true ? "default" : "destructive"}>{m.active.toString()}</Badge></TableCell>
                   </TableRow>
                 }) : null
               }
@@ -154,42 +172,7 @@ export function DataTable() {
         </div>
 
       </TabsContent>
-      <TabsContent value="2" className="flex flex-col px-4 lg:px-6">
-       <div className="overflow-hidden rounded-lg border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead >Default Pre-order Title</TableHead>
-                <TableHead >Description</TableHead>
-                <TableHead >Image URL</TableHead>
-                <TableHead >Icon URL</TableHead>
-                <TableHead >Button URL</TableHead>
-                <TableHead >Background Title Color</TableHead>
-                <TableHead >Background Body Color</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {
-                preorderList.length > 0 ? preorderList.map((m, index) => {
-                  return <TableRow className="" key={ index}>
-                    <TableCell className="w-64 capitalize">
-                      <TableCellViewerList item={preorderList[index]} />
-                      </TableCell>
-                    <TableCell className="w-64">{m.description}</TableCell> 
-                     <TableCell className="w-32"><img width={75} height={75} src={m.imageURL} alt="item-image" /></TableCell>
-                     <TableCell className="w-32"><img width={50} height={50} src={m.iconURL} alt="item-image" /></TableCell>
-                    <TableCell className="w-64">{m.buttonURL}</TableCell>
-                    <TableCell className="w-64">{m.bgTitleColor}</TableCell>
-                    <TableCell className="w-64">{m.bgBodyColor}</TableCell>
-                  </TableRow>
-                }) : null
-              }
-            </TableBody>
-          </Table>
-        </div>
-        <div className="flex items-center justify-end px-4">
-        </div>
-      </TabsContent>
+
     </Tabs>
   )
 }
@@ -198,24 +181,38 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
   const isMobile = useIsMobile();
 
   const [savedValue, setSaved] = React.useState(true);
+  const [open, setOpen] = React.useState(false);
   const [edit, setEdit] = React.useState(false);
   const classInputValue = "focus:outline-none focus:border underline"
   const editCheckRef = React.useRef<HTMLButtonElement>(null);
   const dataChange = React.useRef<Record<string, any>>({});
+  const [categoryPricingList, setCategoryPricingList] = React.useState([{id:"", categoryName:""}]);
+
+  React.useEffect(function() {
+
+    fetch(BACKEND_URL + "categoryPricing").then(async (m) => {
+      let data = await m.json()
+
+      setCategoryPricingList(data.value);
+      // keeping this data in the react.useMemo for lifecycle of component.
+    }).catch(err => console.log(err)) 
+  },[])
 
   return (
-    <Drawer onClose={function () {
+    <Drawer open={open} onClose={function () {
       dataChange.current = {};
       // not pushing the data 
     }} direction={isMobile ? "bottom" : "right"} >
       <DrawerTrigger asChild>
-        <Button variant="link" className="capitalize text-foreground w-fit px-0 text-left">
-          {item.title}
+        <Button onClick={function () {
+          setOpen(true)
+        }} variant="link" className="capitalize text-foreground w-fit px-0 text-left">
+          {item.restaurantName}
         </Button>
       </DrawerTrigger>
       <DrawerContent >
         <DrawerHeader className="gap-1">
-          <DrawerTitle className="capitalize flex justify-between">{item.title}
+          <DrawerTitle className="capitalize flex justify-between">{item.restaurantName}
             <div className="flex gap-1 items-center">
               <Checkbox checked={!savedValue} ref={editCheckRef} onCheckedChange={function (value) {
                 if (value) {
@@ -250,171 +247,51 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
             </div>
           </DrawerTitle>
           <DrawerDescription className="flex gap-2">
-            <Badge variant={"default"}>
-              v2
-            </Badge>
-            <Badge variant={"default"}>
-              Editing Not allowed
-            </Badge>
           </DrawerDescription>
         </DrawerHeader>
         <div className="flex flex-col gap-4 overflow-y-auto px-4 text-sm">
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-3">
-              <div className="text-xl">Title</div>
-              <input className={classInputValue} disabled={savedValue} defaultValue={item?.["title"]} />
+              <div className="text-md">Preferences</div>
+              <input className={classInputValue} disabled={savedValue} onChange={function (e) {
+                let data = e.target.value;
+                dataChange.current["preferences"] = data;
+              }} defaultValue={item?.["preferences"]} />
             </div>
             <div className="flex flex-col gap-3">
-              <div className="text-xl">Button URL</div>
-              <input className={classInputValue} disabled={savedValue} defaultValue={item?.["buttonURL"]} />
-            </div>
-            <div className="flex flex-col gap-3">
-              <div className="flex gap-3 items-center">
-                <div className="text-xl">Description</div>
-                <div>{item.text}</div>
-              </div>
-            </div>
-            <div className="flex flex-col gap-3">
-              <div className="text-xl">Image URL</div>
-              <input className={classInputValue} disabled={savedValue} defaultValue={item?.["imageURL"]} />
-            </div>
-            <div className="flex flex-col gap-3">
-              <div className="text-xl">Background Color</div>
-              <input className={classInputValue} disabled={savedValue} defaultValue={item?.["gradientColor"]} />
+              <div className="text-md">Category Pricing</div>
+               <Select disabled={savedValue} onValueChange={function (data) {
+
+                dataChange.current["categoryPricingId"] = data;
+              }} defaultValue={item.categoryPricing._id}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Is it a supersaver?" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categoryPricingList.length > 0 && categoryPricingList.map((m, index) => {
+                      return <SelectItem key={index} value={m.id}>{m.categoryName}</SelectItem>
+                  }) }
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </div>
         <DrawerFooter>
-          <DialogViewer type="submit" value="Submit to database" changes={dataChange.current} onclickValue={function () { }}></DialogViewer>
+          <DialogViewer type="submit" value="Submit to database" changes={dataChange.current} onclickValue={function () {
+            console.log(dataChange.current)
+            setOpen(false)
+           }}></DialogViewer>
           <DrawerClose asChild>
-            <Button variant="outline">Done</Button>
+            <Button onClick={()=>{
+              setOpen(false)
+            }} variant="outline">Done</Button>
           </DrawerClose>
         </DrawerFooter>
       </DrawerContent>
     </Drawer>
   )
 }
-function TableCellViewerList({ item }: { item: Record<string, any> }) {
-  const isMobile = useIsMobile();
 
-  const [savedValue, setSaved] = React.useState(true);
-  const [edit, setEdit] = React.useState(false);
-  const classInputValue = "focus:outline-none focus:border underline"
-  const editCheckRef = React.useRef<HTMLButtonElement>(null);
-  const dataChange = React.useRef<Record<string, any>>({});
-
-  return (
-    <Drawer onClose={function () {
-      dataChange.current = {};
-      // not pushing the data 
-    }} direction={isMobile ? "bottom" : "right"} >
-      <DrawerTrigger asChild>
-        <Button variant="link" className="capitalize text-foreground w-fit px-0 text-left">
-          {item.title}
-        </Button>
-      </DrawerTrigger>
-      <DrawerContent >
-        <DrawerHeader className="gap-1">
-          <DrawerTitle className="capitalize flex justify-between">{item.title}
-            <div className="flex gap-1 items-center">
-              <Checkbox checked={!savedValue} ref={editCheckRef} onCheckedChange={function (value) {
-                if (value) {
-                  alert("entering the edit mode")
-                  setEdit(true)
-                  setSaved(false)
-                } else if (value == false) {
-                  alert("make you save first")
-                  // setEnableEdit(false)
-                }
-              }}></Checkbox>
-              <div className="text-sm lowercase">
-                Edit
-              </div>
-              {
-                edit && <Button onClick={function () {
-                  setSaved(true)
-                  setEdit(false)
-
-                  // pushing to the database the data -- changes
-                  //TODO
-                  console.log(dataChange.current)
-
-                  // clearing the current context for further value.
-                  dataChange.current = {}
-                }} className="mx-2" variant={"default"} size={"sm"}>
-                  save
-                </Button>
-
-              }
-
-            </div>
-          </DrawerTitle>
-          <DrawerDescription className="flex gap-2">
-            <Badge variant={"default"}>
-              v2
-            </Badge>
-            <Badge variant={"default"}>
-              Editing Not allowed
-            </Badge>
-          </DrawerDescription>
-        </DrawerHeader>
-        <div className="flex flex-col gap-4 overflow-y-auto px-4 text-sm">
-          <div className="flex flex-col gap-4">
-            <div className="flex flex-col gap-3">
-              <div className="text-xl">Title</div>
-              <input className={classInputValue} disabled={savedValue} defaultValue={item?.["title"]} />
-            </div>
-            <div className="flex flex-col gap-3">
-              <div className="text-xl">Button URL</div>
-              <input className={classInputValue} disabled={savedValue} defaultValue={item?.["buttonURL"]} />
-            </div>
-            <div className="flex flex-col gap-3">
-              <div className="flex gap-3 items-center">
-                <div className="text-xl">Description</div>
-                <div>{item.description}</div>
-              </div>
-            </div>
-            <div className="flex flex-col gap-3">
-              <div className="text-xl">Image URL</div>
-              <input className={classInputValue} disabled={savedValue} defaultValue={item?.["imageURL"]} />
-            </div>
-            <div className="flex flex-col gap-3">
-              <div className="text-xl">Background Body Color</div>
-              <input className={classInputValue} disabled={savedValue} defaultValue={item?.["bgBodyColor"]} />
-            </div>
-            <div className="flex flex-col gap-3">
-              <div className="text-xl">Background Title Color</div>
-              <input className={classInputValue} disabled={savedValue} defaultValue={item?.["bgTitleColor"]} />
-            </div>
-            <div className="flex flex-col gap-3">
-              <div className="text-xl">Icon URL</div>
-              <input className={classInputValue} disabled={savedValue} defaultValue={item?.["iconURL"]} />
-            </div>
-            <div className="flex flex-col gap-3">
-              <div className="text-xl">Items List</div>
-              <div className="flex flex-col gap-2">
-                {
-                    item.list.length > 0 && item.list.map((m:{name:string,quant:number}) => {
-
-                      return <span>
-                        {m.name} : {m.quant}
-                      </span>
-                    })
-                }
-              </div>
-            </div>
-          </div>
-        </div>
-        <DrawerFooter>
-          <DialogViewer type="submit" value="Submit to database" changes={dataChange.current} onclickValue={function () { }}></DialogViewer>
-          <DrawerClose asChild>
-            <Button variant="outline">Done</Button>
-          </DrawerClose>
-        </DrawerFooter>
-      </DrawerContent>
-    </Drawer>
-  )
-}
 
 function DialogViewer({ type, value, changes, onclickValue, setValue, disableTrue }: { type: "alert" | "confirm" | "offers" | "unit" | "submit" | "brand", value?: string, changes?: any, onclickValue?: () => void, setValue?: React.Dispatch<React.SetStateAction<any>>, disableTrue?: boolean }) {
 
@@ -665,69 +542,3 @@ function DialogViewer({ type, value, changes, onclickValue, setValue, disableTru
     return <Button>check edit to start making changes</Button>
   }
 }
-//  <div className="grid grid-cols-2 gap-4">
-//               <div className="flex flex-col gap-3">
-//                 <Label htmlFor="type">Type</Label>
-//                 <Select defaultValue={item}>
-//                   <SelectTrigger id="type" className="w-full">
-//                     <SelectValue placeholder="Select a type" />
-//                   </SelectTrigger>
-//                   <SelectContent>
-//                     <SelectItem value="Table of Contents">
-//                       Table of Contents
-//                     </SelectItem>
-//                     <SelectItem value="Executive Summary">
-//                       Executive Summary
-//                     </SelectItem>
-//                     <SelectItem value="Technical Approach">
-//                       Technical Approach
-//                     </SelectItem>
-//                     <SelectItem value="Design">Design</SelectItem>
-//                     <SelectItem value="Capabilities">Capabilities</SelectItem>
-//                     <SelectItem value="Focus Documents">
-//                       Focus Documents
-//                     </SelectItem>
-//                     <SelectItem value="Narrative">Narrative</SelectItem>
-//                     <SelectItem value="Cover Page">Cover Page</SelectItem>
-//                   </SelectContent>
-//                 </Select>
-//               </div>
-//               <div className="flex flex-col gap-3">
-//                 <Label htmlFor="status">Status</Label>
-//                 <Select defaultValue={item}>
-//                   <SelectTrigger id="status" className="w-full">
-//                     <SelectValue placeholder="Select a status" />
-//                   </SelectTrigger>
-//                   <SelectContent>
-//                     <SelectItem value="Done">Done</SelectItem>
-//                     <SelectItem value="In Progress">In Progress</SelectItem>
-//                     <SelectItem value="Not Started">Not Started</SelectItem>
-//                   </SelectContent>
-//                 </Select>
-//               </div>
-//             </div>
-//             <div className="grid grid-cols-2 gap-4">
-//               <div className="flex flex-col gap-3">
-//                 <Label htmlFor="target">Target</Label>
-//                 <Input id="target" defaultValue={item} />
-//               </div>
-//               <div className="flex flex-col gap-3">
-//                 <Label htmlFor="limit">Limit</Label>
-//                 <Input id="limit" defaultValue={item} />
-//               </div>
-//             </div>
-//             <div className="flex flex-col gap-3">
-//               <Label htmlFor="reviewer">Reviewer</Label>
-//               <Select defaultValue={item}>
-//                 <SelectTrigger id="reviewer" className="w-full">
-//                   <SelectValue placeholder="Select a reviewer" />
-//                 </SelectTrigger>
-//                 <SelectContent>
-//                   <SelectItem value="Eddie Lake">Eddie Lake</SelectItem>
-//                   <SelectItem value="Jamik Tashpulatov">
-//                     Jamik Tashpulatov
-//                   </SelectItem>
-//                   <SelectItem value="Emily Whalen">Emily Whalen</SelectItem>
-//                 </SelectContent>
-//               </Select>
-//             </div>
