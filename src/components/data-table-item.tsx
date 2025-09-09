@@ -1462,6 +1462,7 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
             </div>
             <div className="flex flex-col gap-3">
               <div className="text-xl">Offers </div>
+              <div className="text-sm">offers is same for all pricing category and same unit for all the offers for consistency</div>
               {//deletion of data only in case of offers none others.
                 item.offersId.map((m: any, index: number) => {
                   return <div key={index} className="p-2">

@@ -88,7 +88,7 @@ export function DataTable() {
 
       setCustomerList(data.value);
       setFilterCustomer(data.value);
-
+      
       // keeping this data in the react.useMemo for lifecycle of component.
     }).catch(err => console.log(err))
   }, [])
@@ -192,7 +192,6 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
 
     fetch(BACKEND_URL + "categoryPricing").then(async (m) => {
       let data = await m.json()
-
       setCategoryPricingList(data.value);
       // keeping this data in the react.useMemo for lifecycle of component.
     }).catch(err => console.log(err)) 
@@ -231,7 +230,6 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
                 edit && <Button onClick={function () {
                   setSaved(true)
                   setEdit(false)
-
                   // pushing to the database the data -- changes
                   //TODO
                   console.log(dataChange.current)
@@ -260,10 +258,12 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
             </div>
             <div className="flex flex-col gap-3">
               <div className="text-md">Category Pricing</div>
+              <div>
+                make sure the customer does not have a pending order
+              </div>
                <Select disabled={savedValue} onValueChange={function (data) {
-
                 dataChange.current["categoryPricingId"] = data;
-              }} defaultValue={item.categoryPricing._id}>
+              }} defaultValue={ "categoryPricing" in item ? item.categoryPricing._id : ""}>
                 <SelectTrigger>
                   <SelectValue placeholder="Is it a supersaver?" />
                 </SelectTrigger>

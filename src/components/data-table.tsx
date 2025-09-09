@@ -150,6 +150,7 @@ import pendingOrderData from "@/pendingorder.json";
 
 import itemRequirementData from "@/requirement.json";
 import { IconPlus } from "@tabler/icons-react"
+import { toast, Toaster } from "sonner"
 
 
 export function DataTable() {
@@ -194,7 +195,9 @@ export function DataTable() {
           </TabsTrigger>
         </TabsList>
         <div className="flex items-center gap-2">
-          <Button variant={"secondary"} size={"sm"}>
+          <Button onClick={function () {
+            toast.info("This will be available in v2")
+          }} variant={"secondary"} size={"sm"}>
             <IconPlus></IconPlus>
             Export
           </Button>
@@ -270,6 +273,7 @@ export function DataTable() {
         <div className="flex items-center justify-end px-4">
       </div>
       </TabsContent>
+      <Toaster></Toaster>
     </Tabs>
   )
 }

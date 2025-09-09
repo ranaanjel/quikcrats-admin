@@ -25,10 +25,10 @@ function App() {
       <Route path='/builtinlist' element={<Builtin></Builtin>}></Route>
       <Route path='/orderlist' element={<Orders></Orders>}></Route>
       <Route path='/customerlist' element={<Customer></Customer>}></Route>
-      <Route path='/login' element={<Login></Login>}></Route>
       <Route path='/help' element={<Help></Help>}></Route>
       <Route path='/setting' element={<Setting></Setting>}></Route>
     </Route>
+      <Route path='/login' element={<Login></Login>}></Route>
       <Route path="*" element={<NotFound></NotFound>}></Route>
     </Routes>
     </Router>

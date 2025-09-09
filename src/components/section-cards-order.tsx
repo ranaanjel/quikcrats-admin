@@ -14,29 +14,27 @@ import { Skeleton } from "./ui/skeleton"
 export function SectionCards() {
   let [cardList, setCardList] = useState<{title:string,amount:number,message:string, footerNote:string, change?:string, inStock?:number, outStock?:number}[]>([{
    
-    title:"Total Customer",
-    amount:0,//assuming it will going to stay that way for every
-    message:"Total number of customers",
-    footerNote :"Includes the total number of customer",
+    title:"Total Pending Orders",
+    amount:0,
+    message:"Total number of orders",
+    footerNote :"Includes the total number of pending orders to be delivered",
   },{
    
-    title:"Active Customer",
-    amount:0, //assuming it will going to stay that way for every
-    message:"Total number for active customers",
-    footerNote :"Includes only those customers who has ordered/signed up in the past 15 days",
+    title:"Total Orders in Last 15 days",
+    amount:0,
+    message:"Total number for orders in last fifteen days",
+    footerNote :"Includes cancel, modified, delivered orders",
   }])
   let [fetched, setFetched] = useState(false)
   useEffect(function () {
     // using the recoil here for the current data - fetching from backend -- atom v2
-    let url = BACKEND_URL!+"customerCard" 
+    let url = BACKEND_URL!+"orderCard" 
     fetch(url).then(async (m) => {
-      let {totalCustomer, totalActive} = (await m.json()) as {totalCustomer:number, totalActive:number};
+      let {totalPending, totalOrder} = (await m.json()) as {totalPending:number, totalOrder:number};
 
       setCardList((prev) => {
-
-        prev[0].amount = totalCustomer;
-        prev[1].amount = totalActive;
-
+        prev[0].amount = totalPending;
+        prev[1].amount = totalOrder;
         return prev;
       })
 
