@@ -64,8 +64,76 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 }
-
 :root {
+  --radius: 0.625rem;
+  --background: rgba(255, 255, 255, 1);
+  --foreground: rgba(38, 38, 38, 1);
+  --card: rgba(255, 255, 255, 1);
+  --card-foreground: rgba(38, 38, 38, 1);
+  --popover: rgba(255, 255, 255, 1);
+  --popover-foreground: rgba(38, 38, 38, 1);
+  --primary: rgba(55, 55, 55, 1);
+  --primary-foreground: rgba(251, 251, 251, 1);
+  --secondary: rgba(248, 248, 248, 1);
+  --secondary-foreground: rgba(55, 55, 55, 1);
+  --muted: rgba(248, 248, 248, 1);
+  --muted-foreground: rgba(115, 115, 115, 1);
+  --accent: rgba(248, 248, 248, 1);
+  --accent-foreground: rgba(55, 55, 55, 1);
+  --destructive: rgba(199, 55, 55, 1);
+  --border: rgba(235, 235, 235, 1);
+  --input: rgba(235, 235, 235, 1);
+  --ring: rgba(180, 180, 180, 1);
+  --chart-1: rgba(211, 106, 64, 1);
+  --chart-2: rgba(56, 140, 223, 1);
+  --chart-3: rgba(79, 103, 219, 1);
+  --chart-4: rgba(241, 148, 67, 1);
+  --chart-5: rgba(232, 139, 52, 1);
+  --sidebar: rgba(251, 251, 251, 1);
+  --sidebar-foreground: rgba(38, 38, 38, 1);
+  --sidebar-primary: rgba(55, 55, 55, 1);
+  --sidebar-primary-foreground: rgba(251, 251, 251, 1);
+  --sidebar-accent: rgba(248, 248, 248, 1);
+  --sidebar-accent-foreground: rgba(55, 55, 55, 1);
+  --sidebar-border: rgba(235, 235, 235, 1);
+  --sidebar-ring: rgba(180, 180, 180, 1);
+}
+
+.dark {
+  --background: rgba(38, 38, 38, 1);
+  --foreground: rgba(251, 251, 251, 1);
+  --card: rgba(55, 55, 55, 1);
+  --card-foreground: rgba(251, 251, 251, 1);
+  --popover: rgba(55, 55, 55, 1);
+  --popover-foreground: rgba(251, 251, 251, 1);
+  --primary: rgba(235, 235, 235, 1);
+  --primary-foreground: rgba(55, 55, 55, 1);
+  --secondary: rgba(70, 70, 70, 1);
+  --secondary-foreground: rgba(251, 251, 251, 1);
+  --muted: rgba(70, 70, 70, 1);
+  --muted-foreground: rgba(180, 180, 180, 1);
+  --accent: rgba(70, 70, 70, 1);
+  --accent-foreground: rgba(251, 251, 251, 1);
+  --destructive: rgba(188, 55, 55, 1);
+  --border: rgba(255, 255, 255, 0.1);
+  --input: rgba(255, 255, 255, 0.15);
+  --ring: rgba(115, 115, 115, 1);
+  --chart-1: rgba(102, 61, 199, 1);
+  --chart-2: rgba(81, 190, 142, 1);
+  --chart-3: rgba(232, 139, 52, 1);
+  --chart-4: rgba(128, 55, 199, 1);
+  --chart-5: rgba(199, 102, 61, 1);
+  --sidebar: rgba(55, 55, 55, 1);
+  --sidebar-foreground: rgba(251, 251, 251, 1);
+  --sidebar-primary: rgba(102, 61, 199, 1);
+  --sidebar-primary-foreground: rgba(251, 251, 251, 1);
+  --sidebar-accent: rgba(70, 70, 70, 1);
+  --sidebar-accent-foreground: rgba(251, 251, 251, 1);
+  --sidebar-border: rgba(255, 255, 255, 0.1);
+  --sidebar-ring: rgba(115, 115, 115, 1);
+}
+
+/* :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.147 0.004 49.25);
@@ -132,7 +200,7 @@
   --sidebar-accent-foreground: oklch(0.985 0.001 106.423);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.553 0.013 58.071);
-}
+} */
 
 @layer base {
   * {

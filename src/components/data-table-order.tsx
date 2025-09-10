@@ -1,7 +1,7 @@
 import * as React from "react"
 
 import { z } from "zod"
-import { toast, Toaster } from "sonner"
+import html2pdf from "html2pdf.js"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Badge } from "@/components/ui/badge"
@@ -32,36 +32,7 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs"
 
-export const schema = z.object({
-  id: z.number(),
-  header: z.string(),
-  type: z.string(),
-  status: z.string(),
-  target: z.string(),
-  limit: z.string(),
-  reviewer: z.string(),
-})
-export const pendingOrderSchema = z.object({
-  id: z.number(),
-  orderId: z.number(),
-  deliveryDate: z.string(),
-  deliveryTiming: z.string(),
-  instruction: z.string(),
-  customerName: z.string(),
-  orderValue: z.number(),
-  deliveryStatus: z.string(),
-  orderStatus: z.string(),
-  address: z.string(),
-  zone: z.string() // pincode
-})
-export const itemRequiredSchema = z.object({
-  id: z.number(),
-  itemName: z.number(),
-  category: z.string(),
-  subCategory: z.string(),
-  totalQuantity: z.string(),
-  unit: z.string()
-})
+
 
 // Create a separate component for the drag handle
 
@@ -102,18 +73,20 @@ interface DataReturn {
   userAddress: {
     deliveryTiming: string, address: string, shopDetails: string, receiver: string, instruction: string[], pincode: string, tag: string, additionalNo: string, deliveryAvailable: boolean,
   }
-  , deliveryStatus: string, 
+  , deliveryStatus: string,
   orderStatus: string,
   restaurantName: string,
   preferences: string, orderId: string,
-  createdAt: Date, deliveryDate: Date, totalValue: number, 
+  createdAt: Date, deliveryDate: Date, totalValue: number,
   saving: number, itemList: { items: { itemId: string, quant: number, skip: boolean, price: number[] }[] }
 }
 
+
 export function DataTable() {
   const [orderList, setOrderList] = React.useState<DataReturn[]>([]);
+  const [allList, setAllList] = React.useState<DataReturn[]>([])
   const [filterList, setFilterList] = React.useState<DataReturn[]>([]);
-  const [zoneList, setZoneList] = React.useState<{id:string, pincode:string, area:string}[]>([]);
+  const [zoneList, setZoneList] = React.useState<{ id: string, pincode: string, area: string }[]>([]);
 
   React.useEffect(function () {
     // getting all the items from the backend 
@@ -126,6 +99,7 @@ export function DataTable() {
 
       setOrderList(allData);
       setFilterList(pendingData)
+      setAllList(allData)
       // keeping this data in the react.useMemo for lifecycle of component.
     }).catch(err => console.log(err))
 
@@ -157,8 +131,8 @@ export function DataTable() {
         value="1"
         className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6"
       >
-        
-        
+
+
         <div className="overflow-hidden rounded-lg border">
           <Table>
             <TableHeader>
@@ -209,15 +183,32 @@ export function DataTable() {
       <TabsContent value="2" className="flex flex-col px-4 lg:px-6 gap-4">
         <div className="flex text-md gap-3 items-end">
           <div className="font-medium  text-gray-50/80">
-          Filter Based on customer name, restaurant, pincode :
-        </div>
-        <Input className="w-1/2"></Input>
+            Filter Based on customer name, restaurant, pincode :
+          </div>
+          <Input onChange={function (e) {
+
+            let value = e.target.value;
+
+            if (value.trim() == "") {
+              setOrderList(allList)
+              return;
+            }
+
+            let pattern = new RegExp(value, "i");
+            let newData = allList.filter(m => {
+              let matchValue = m.restaurantName + " " + m.userAddress.pincode + " " + m.userContact.name
+              return matchValue.match(pattern)
+            })
+
+            setOrderList(newData)
+
+          }} className="w-1/2"></Input>
         </div>
         <div className="overflow-hidden rounded-lg border">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead >Order Id</TableHead>
+              <TableRow className="">
+                <TableHead>Order Id</TableHead>
                 <TableHead >Customer Contact</TableHead>
                 <TableHead >Restaurant Name</TableHead>
                 <TableHead >Preferences</TableHead>
@@ -273,12 +264,12 @@ export function DataTable() {
             <TableBody>
               {
                 zoneList.length > 0 ? zoneList.map((m, index) => {
-          
+
                   return <TableRow className="" key={index}>
                     <TableCell className="w-64 capitalize">
                       <TableCellViewerZone item={zoneList[index]} />
                     </TableCell>
-                    <TableCell className="w-64">{m.area}</TableCell> 
+                    <TableCell className="w-64">{m.area}</TableCell>
                     <TableCell className="w-64">N/A <Badge>v2</Badge></TableCell>
                   </TableRow>
                 }) : null
@@ -298,11 +289,10 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
 
   const [savedValue, setSaved] = React.useState(true);
   const [edit, setEdit] = React.useState(false);
-  const classInputValue = "focus:outline-none focus:border underline"
   const editCheckRef = React.useRef<HTMLButtonElement>(null);
   const dataChange = React.useRef<Record<string, any>>({});
 
-  const contactValue = item.userContact.name + " " + item.userContact.email + " "+item.userContact.phoneNo + " ";
+  const contactValue = item.userContact.name + " " + item.userContact.email + " " + item.userContact.phoneNo + " ";
   let address = item.userAddress.address;
   let pincode = item.userAddress.pincode;
   let instruction = item.userAddress.instruction.join(", ");
@@ -319,13 +309,17 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
 
   let itemList = item.itemList.items;
 
+
+  let userInfo = {
+    address,contactValue, pincode, restaurant: item.restaurantName, totalValue, saving, orderDeliveryDate, instruction, orderId: item.orderId
+  }
   return (
     <Drawer onClose={function () {
       dataChange.current = {};
       // not pushing the data 
     }} direction={isMobile ? "bottom" : "right"} >
       <DrawerTrigger asChild>
-        <Button variant="link" className="capitalize text-foreground text-left">
+        <Button variant="link" className="">
           #{item.orderId}
         </Button>
       </DrawerTrigger>
@@ -358,7 +352,6 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
                 }} className="mx-2" variant={"default"} size={"sm"}>
                   save
                 </Button>
-
               }
 
             </div>
@@ -370,7 +363,7 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-3">
               <div className="text-xl">Order Id</div>
-              <div>{"#"+item?.["orderId"]} </div>
+              <div>{"#" + item?.["orderId"]} </div>
             </div>
             <div className="flex flex-col gap-3">
               <div className="text-xl">Address and details</div>
@@ -427,9 +420,9 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
                   <SelectValue placeholder="select the delivery status and submit" />
                 </SelectTrigger>
                 <SelectContent>
-       <SelectItem value={deliveryStatusInterface.OrderDelivered}>{deliveryStatusInterface.OrderDelivered}</SelectItem>
-       <SelectItem value={deliveryStatusInterface.OrderInTransit}>{deliveryStatusInterface.OrderInTransit}</SelectItem>
-       <SelectItem value={deliveryStatusInterface.OrderReceived}>{deliveryStatusInterface.OrderReceived}</SelectItem>
+                  <SelectItem value={deliveryStatusInterface.OrderDelivered}>{deliveryStatusInterface.OrderDelivered}</SelectItem>
+                  <SelectItem value={deliveryStatusInterface.OrderInTransit}>{deliveryStatusInterface.OrderInTransit}</SelectItem>
+                  <SelectItem value={deliveryStatusInterface.OrderReceived}>{deliveryStatusInterface.OrderReceived}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -454,7 +447,7 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
               <div className="w-1/2">{saving.toString()}</div>
             </div>
             <div className="flex flex-col gap-3">
-              <ItemList all={true} list={itemList}></ItemList>
+              <ItemList userInfo={userInfo} all={true} list={itemList}></ItemList>
             </div>
           </div>
         </div>
@@ -468,68 +461,205 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
     </Drawer>
   )
 }
-function ItemList({list, all}:{all:boolean,list:{itemId:string, quant:number, unit:string, price:number[]}[]} ){
+function ItemList({ userInfo, list, all }: { userInfo: Record<string, any>, all: boolean, list: { itemId: string, quant: number, unit: string, price: number[] }[] }) {
 
-  let [checkState, setCheckState] = React.useState<boolean[]>(Array(list.length).fill(true))
+  let [checkState, setCheckState] = React.useState<boolean[]>(Array(list.length).fill(false))
+  let [filterList, setFilterList] = React.useState<{ itemId: string, quant: number, unit: string, price: number[] }[]>(list);
+  let [print, setPrint] = React.useState(false);
+
+  function printBill() {
+    setFilterList(() => {
+      let newData = list.filter((_, index) => {
+        return checkState[index]
+      })
+      return newData
+    })
+    setPrint(true)
+  }
+
+  React.useEffect(function () {
+    setCheckState(Array(list.length).fill(true))
+  },[])
 
   return <><div className="flex justify-between items-center">
-                <div className="text-xl">Item list</div>
-                <Button>Print bill</Button>
-              </div>
-              <Badge variant={"destructive"}>check items to get bill</Badge>
-              <div className="flex justify-between">
-                      <Check className="size-3 self-center"></Check>
-                      <span className="w-16">item name</span>
-                      <span className="w-16">quantity</span>
-                      <span className="w-10">mrp</span>
-                      <span className="w-10">discount</span>
-                      <span className="w-10">total</span>
-                  </div>
-              {
-                list.length > 0 && list.map((m, index) => {
+    <div className="text-xl">Item list</div>
+    <Button onClick={function () {
+      printBill()
+    }}>Print bill</Button>
+  </div>
+    <Badge variant={"destructive"}>check items to get bill</Badge>
+    <div>
+      <div className="flex justify-between">
+        <Check className="size-3 self-center"></Check>
+        <span className="w-16">item name</span>
+        <span className="w-16">quantity</span>
+        <span className="w-10">mrp</span>
+        <span className="w-10">discount</span>
+        <span className="w-10">total</span>
+      </div>
+      {
+        list.length > 0 && list.map((m, index) => {
 
-                  let itemName = m.itemId;
-                  let quant = m.quant;
-                  let price = m.price[0];
-                  let discount = m.price[1];
-                  let unit = m.unit;
+          let itemName = m.itemId;
+          let quant = m.quant;
+          let price = m.price[0];
+          let discount = m.price[1];
+          let unit = m.unit || " unit";
 
-                  return <div key={index} className="flex justify-between">
-                      <Checkbox onClick={function () {
-                        console.log("click")
-                        setCheckState(prev => {
-                            prev[index] = !prev[index]
-                            let newData = [...prev]
-                          return newData;
-                        })
-                      }}   checked={checkState[index]} ></Checkbox>
-                      <span className="w-16">{itemName}</span>
-                      <span className="w-16">{quant}{unit}</span>
-                      <span className="w-10 line-through  ">{price}</span>
-                      <span className="w-10">{discount}</span>
-                      <span className="w-10">{quant*discount}</span>
-                  </div>
-                })
-              }
+          return <div key={index} className="flex justify-between h-12 border px-1 items-center">
+            <Checkbox onClick={function () {
+              console.log("click")
+              setCheckState(prev => {
 
-              {
-                all && <>              <div>
-                in case of items not available, uncheck the items not present and press send below button
-              </div>
-              <Button variant={"destructive"}>Send N/A items</Button>
-              <div>
-                fixes above problem in v2 inventory management
-              </div>
-                </>
-              }
-</>
+                prev[index] = !prev[index]
+                let newData = [...prev]
+                console.log(newData)
+                return newData;
+              })
+            }} checked={checkState[index]} ></Checkbox>
+            <span className="w-16">{itemName}</span>
+            <span className="w-16">{quant}{unit}</span>
+            <span className="w-10 line-through  ">{price}</span>
+            <span className="w-10">{discount}</span>
+            <span className="w-10">{quant * discount}</span>
+          </div>
+        })
+      }
+    </div>
+
+    {
+      all && <>              <div>
+        in case of items not available, uncheck the items not present and press send below button
+      </div>
+        <Button variant={"destructive"}>Send N/A items</Button>
+        <div>
+          fixes above problem in v2 inventory management
+        </div>
+
+
+
+        </>
+    }
+      {print ? <Bill setPrint={setPrint} userInfo={userInfo} list={filterList} /> : <div>
+        no print
+      </div> }
+  </>
 }
+function Bill({ userInfo, list , setPrint}: {setPrint:React.Dispatch<React.SetStateAction<boolean>>,userInfo: Record<string, any>, list: { itemId: string, quant: number, unit: string, price: number[] }[] }) {
 
+  let printBillRef = React.useRef<HTMLDivElement>(null);
+
+
+  function printing() {
+
+    console.log(printBillRef.current)
+     
+    html2pdf().from(printBillRef.current as HTMLInputElement).set({
+      margin: 10,
+      filename: userInfo.restaurant + "_" + userInfo.orderDeliveryDate + ".pdf",
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'mm', format: 'A4', orientation: 'portrait' }
+    }).save().then(m => {
+    
+      setPrint(false)
+    });
+  }
+
+  return <div  className=" absolute p-1 text-black top-0 left-0 h-full overflow-scroll w-full bg-white ">
+  
+   <div ref={printBillRef} className="flex flex-col gap-4 p-4 text-sm">
+
+     <div className="text-black">
+      <div className="font-bold text-black">
+        Quikcrats Services private ltd
+      </div>
+      <div>
+        RZ E121 KH No - 83/20 Nihal Vihar Nangloi, near raj properties, 110041
+      </div>
+      <div>
+        Contact : 8287470325
+      </div>
+      <div>
+        Email : quikcrats@gmail.com
+      </div>
+      <div>
+        State : 07-Delhi
+      </div>
+    </div>
+    <div className="font-bold text-xl text-center text-black">
+      Sales Invoice 
+    </div>
+   <div className="text-black">
+     <div>
+      Bill To : {userInfo.restaurant}
+    </div>
+    <div>
+      Address : {userInfo.address}
+    </div>
+    <div>
+      Contact : {userInfo.contactValue}
+    </div>
+    <div>
+      Date : {userInfo.orderDeliveryDate}
+    </div>
+    <div>
+      <span className="font-bold">Order Id</span> : {userInfo.orderId}
+    </div>
+   <div className="bg-[#1447e6] text-[#fff] flex gap-2 justify-between rounded p-2 py-4 mt-4">
+    <span className="w-32">item name</span>
+        <span className="flex-1 text-end">quantity</span>
+        <span className="flex-1 text-end">mrp</span>
+        <span className="flex-1 text-end">discount price</span>
+        <span className="flex-1 text-end">total</span>
+   </div>
+  
+   </div> 
+   
+   <div>
+    {
+    list.length > 0 && list.map((m,index) => {
+        let itemName = m.itemId;
+          let quant = m.quant;
+          let price = m.price[0];
+          let discount = m.price[1];
+          let unit = m.unit;
+
+      return <div key={index} className="flex justify-between border-b border-[#000]  p-2 py-4 text-sm h-12 items-start  text-black">
+          <span className="w-32">{itemName}</span>
+            <span className="flex-1 text-end">{quant}{unit}</span>
+            <span className="flex-1 text-end text-[#6a7282]">{price}</span>
+            <span className="flex-1 text-end">{discount}</span>
+            <span className="flex-1 text-end">{quant * discount}</span>
+   </div>
+    })
+   }
+   </div>
+   <div className="flex flex-col items-end text-black" >
+
+   <div>
+    Saving : {userInfo.saving}
+   </div>
+   <div>
+    Total value : {userInfo.totalValue}
+   </div>
+   </div>
+
+   <div className="text-center text-black">
+        *Terms & Conditions Applicable 
+   </div>
+   </div>
+     <div className="text-center bg-blue-500 text-white border-2 border-sky-700 px-4 py-2 rounded" onClick={function () {
+      printing();
+  }}>
+    print the Bill</div>
+  </div>
+
+}
 
 function TableCellViewerAll({ item }: { item: Record<string, any> }) {
   const isMobile = useIsMobile();
 
-  const contactValue = item.userContact.name + " " + item.userContact.email + " "+item.userContact.phoneNo + " ";
+  const contactValue = item.userContact.name + " " + item.userContact.email + " " + item.userContact.phoneNo + " ";
   let address = item.userAddress.address;
   let pincode = item.userAddress.pincode;
   let instruction = item.userAddress.instruction.join(", ");
@@ -545,6 +675,10 @@ function TableCellViewerAll({ item }: { item: Record<string, any> }) {
   let saving = item.saving;
 
   let itemList = item.itemList.items;
+
+  let userInfo = {
+    address,contactValue, pincode, restaurant: item.restaurantName, totalValue, saving, orderDeliveryDate, instruction, orderId: item.orderId
+  }
 
   return (
     <Drawer onClose={function () {
@@ -566,7 +700,7 @@ function TableCellViewerAll({ item }: { item: Record<string, any> }) {
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-3">
               <div className="text-xl">Order Id</div>
-              <div>{"#"+item?.["orderId"]} </div>
+              <div>{"#" + item?.["orderId"]} </div>
             </div>
             <div className="flex flex-col gap-3">
               <div className="text-xl">Address and details</div>
@@ -640,7 +774,7 @@ function TableCellViewerAll({ item }: { item: Record<string, any> }) {
               <div className="w-1/2">{saving.toString()}</div>
             </div>
             <div className="flex flex-col gap-3">
-              <ItemList all={false} list={itemList}></ItemList>
+              <ItemList userInfo={userInfo} all={false} list={itemList}></ItemList>
             </div>
           </div>
         </div>
@@ -734,7 +868,7 @@ function TableCellViewerZone({ item }: { item: Record<string, any> }) {
   )
 }
 
-function DialogViewer({ type, value, changes, onclickValue, setValue, disableTrue }: { type: "alert" | "confirm" | "offers" | "unit" | "submit" | "brand"|"zone", value?: string, changes?: any, onclickValue?: () => void, setValue?: React.Dispatch<React.SetStateAction<any>>, disableTrue?: boolean }) {
+function DialogViewer({ type, value, changes, onclickValue, setValue, disableTrue }: { type: "alert" | "confirm" | "offers" | "unit" | "submit" | "brand" | "zone", value?: string, changes?: any, onclickValue?: () => void, setValue?: React.Dispatch<React.SetStateAction<any>>, disableTrue?: boolean }) {
 
   const [brandList, setBrandList] = React.useState<string[]>([]);
   const [unitList, setUnitList] = React.useState<string[]>([]);
@@ -748,7 +882,7 @@ function DialogViewer({ type, value, changes, onclickValue, setValue, disableTru
     quantity: 0,
     superSaver: false
   });
-  
+
   const pincodeRef = React.useRef<HTMLInputElement>(null);
   const areaRef = React.useRef<HTMLInputElement>(null);
 
@@ -982,9 +1116,9 @@ function DialogViewer({ type, value, changes, onclickValue, setValue, disableTru
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  }else if(type == "zone"){
+  } else if (type == "zone") {
 
-     return <Dialog open={open} onOpenChange={setOpen} >
+    return <Dialog open={open} onOpenChange={setOpen} >
       <DialogTrigger asChild>
         <Button variant="outline">Create Zone</Button>
       </DialogTrigger>
@@ -995,7 +1129,7 @@ function DialogViewer({ type, value, changes, onclickValue, setValue, disableTru
             <div className=" flex flex-col mt-6 gap-4">
               <div className="flex gap-2">
                 <Input className="w-1/2" ref={pincodeRef} placeholder={"enter the pincode"}></Input>
-              <Input className="w-1/2" ref={areaRef} placeholder={"enter area name"}></Input>
+                <Input className="w-1/2" ref={areaRef} placeholder={"enter area name"}></Input>
               </div>
               <Button onClick={function () {
                 if (setValue) setValue(brandRef.current?.value);

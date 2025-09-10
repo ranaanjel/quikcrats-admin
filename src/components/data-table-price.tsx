@@ -19,36 +19,7 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs"
 
-export const schema = z.object({
-  id: z.number(),
-  header: z.string(),
-  type: z.string(),
-  status: z.string(),
-  target: z.string(),
-  limit: z.string(),
-  reviewer: z.string(),
-})
-export const pendingOrderSchema = z.object({
-  id: z.number(),
-  orderId: z.number(),
-  deliveryDate: z.string(),
-  deliveryTiming: z.string(),
-  instruction: z.string(),
-  customerName: z.string(),
-  orderValue: z.number(),
-  deliveryStatus: z.string(),
-  orderStatus: z.string(),
-  address: z.string(),
-  zone: z.string() // pincode
-})
-export const itemRequiredSchema = z.object({
-  id: z.number(),
-  itemName: z.number(),
-  category: z.string(),
-  subCategory: z.string(),
-  totalQuantity: z.string(),
-  unit: z.string()
-})
+
 
 // Create a separate component for the drag handle
 

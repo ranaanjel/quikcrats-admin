@@ -92,6 +92,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             >
               <a href="/">
                 <span className="text-base font-semibold">Quikcrats Panel</span>
+                <img src="/favicon.svg" height={25} width={25} alt="logo"/>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>

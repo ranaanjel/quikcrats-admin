@@ -10,8 +10,25 @@ import { Builtin } from './pages/builtin';
 import { Orders } from './pages/orders';
 import { Customer } from './pages/customer';
 import {Help, Login, Setting} from "./pages/login"
+import { useEffect } from 'react';
 
 function App() {
+
+
+
+  useEffect(function (){
+
+    if("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js",{
+        scope:"/"
+      }).then(m => {
+        console.log("service registered is successfully registered")
+      }).catch(err => {
+        console.log(err, "service registered is not registered.")
+      })
+    }
+
+  },[])
 
   return  <div className="dark:bg-black dark:text-white bg-(--foreground-color) text-black w-screen h-screen sm:overflow-hidden">
   <ThemeProvider>

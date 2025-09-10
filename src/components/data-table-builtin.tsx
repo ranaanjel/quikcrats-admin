@@ -1,7 +1,6 @@
 import * as React from "react"
 
 import { z } from "zod"
-import { toast, Toaster } from "sonner"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Badge } from "@/components/ui/badge"
@@ -83,10 +82,6 @@ export function DataTable() {
 
   // const clearTimeRef: React.RefObject<ReturnType<typeof setTimeout> | undefined> = React.useRef(undefined)
 
-  let [gotData, setGotData] = React.useState<any[]>([]);
-  let [filterGotData, setFilterGotData] = React.useState<any>([])
-
-
   React.useEffect(function () {
     // getting all the items from the backend 
     fetch(BACKEND_URL + "adsbanner").then(async (m) => {
@@ -135,7 +130,7 @@ export function DataTable() {
             </TableHeader>
             <TableBody>
               {
-                bannerList.length > 0 ? bannerList.map((m, index) => {
+                bannerList.length > 1 ? bannerList.map((m, index) => {
                   return <TableRow className="" key={m.title + index}>
                     <TableCell className="w-64 capitalize">
                       <TableCellViewer item={bannerList[index]} />
@@ -170,14 +165,14 @@ export function DataTable() {
             </TableHeader>
             <TableBody>
               {
-                preorderList.length > 0 ? preorderList.map((m, index) => {
+                preorderList.length > 1 ? preorderList.map((m, index) => {
                   return <TableRow className="" key={ index}>
                     <TableCell className="w-64 capitalize">
                       <TableCellViewerList item={preorderList[index]} />
                       </TableCell>
                     <TableCell className="w-64">{m.description}</TableCell> 
-                     <TableCell className="w-32"><img width={75} height={75} src={m.imageURL} alt="item-image" /></TableCell>
-                     <TableCell className="w-32"><img width={50} height={50} src={m.iconURL} alt="item-image" /></TableCell>
+                     <TableCell className="w-32"><img width={75} height={75} src={m.imageURL || "#"} alt="item-image" /></TableCell>
+                     <TableCell className="w-32"><img width={50} height={50} src={m.iconURL || "#"} alt="item-image" /></TableCell>
                     <TableCell className="w-64">{m.buttonURL}</TableCell>
                     <TableCell className="w-64">{m.bgTitleColor}</TableCell>
                     <TableCell className="w-64">{m.bgBodyColor}</TableCell>
