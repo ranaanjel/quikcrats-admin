@@ -7,16 +7,22 @@ self.addEventListener("install" , function (installEvent) {
 })
 
 self.addEventListener("fetch", function (fetchEvent) {
-    
-    fetchEvent.respondWith(fetch(fetchEvent.request).then(res => {
+
+    let method = fetchEvent.request.method; 
+    if(method == "GET") {
+    fetchEvent.respondWith(fetch(fetchEvent.request,{credentials:"include"}).then(res => {
         let clone = res.clone();
         if(fetchEvent.request.url.startsWith("http")) {
             caches.open("admin").then(cache => {
                 cache.put(fetchEvent.request,clone)
             })
         }
-
-        return res
+        return res;
     }
-    ).catch())
+    ).catch(err => {
+        console.log(err, "in the sw")
+    }))
+
+    }
+    
 })

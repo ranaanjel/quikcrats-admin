@@ -29,7 +29,7 @@ export function SectionCards() {
   useEffect(function () {
     // using the recoil here for the current data - fetching from backend -- atom v2
     let url = BACKEND_URL!+"orderCard" 
-    fetch(url).then(async (m) => {
+    fetch(url,{credentials:"include"}).then(async (m) => {
       let {totalPending, totalOrder} = (await m.json()) as {totalPending:number, totalOrder:number};
 
       setCardList((prev) => {

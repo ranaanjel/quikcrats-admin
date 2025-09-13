@@ -14,14 +14,14 @@ import { useEffect } from 'react';
 
 function App() {
 
-
-
   useEffect(function (){
+
+   
 
     if("serviceWorker" in navigator) {
       navigator.serviceWorker.register("/sw.js",{
         scope:"/"
-      }).then(m => {
+      }).then(_ => {
         console.log("service registered is successfully registered")
       }).catch(err => {
         console.log(err, "service registered is not registered.")

@@ -83,7 +83,7 @@ export function DataTable() {
 
   React.useEffect(function () {
     // getting all the items from the backend 
-    fetch(BACKEND_URL + "customerData").then(async (m) => {
+    fetch(BACKEND_URL + "customerData",{credentials:"include"}).then(async (m) => {
       let data = await m.json()
 
       setCustomerList(data.value);
@@ -190,7 +190,7 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
 
   React.useEffect(function() {
 
-    fetch(BACKEND_URL + "categoryPricing").then(async (m) => {
+    fetch(BACKEND_URL + "categoryPricing",{credentials:"include"}).then(async (m) => {
       let data = await m.json()
       setCategoryPricingList(data.value);
       // keeping this data in the react.useMemo for lifecycle of component.
@@ -311,14 +311,14 @@ function DialogViewer({ type, value, changes, onclickValue, setValue, disableTru
 
   React.useEffect(function () {
     if (type == "brand") {
-      fetch(BACKEND_URL! + "brand").then(async (m) => {
+      fetch(BACKEND_URL! + "brand",{credentials:"include"}).then(async (m) => {
         let data = await m.json()
         setBrandList(data.data)
         setFilterValue(data.data);
       }).catch(err => console.log(err))
     } else if (type == "unit") {
 
-      fetch(BACKEND_URL! + "unit").then(async (m) => {
+      fetch(BACKEND_URL! + "unit",{credentials:"include"}).then(async (m) => {
         let data = await m.json()
         setUnitList(data.data)
       }).catch(err => console.log(err))

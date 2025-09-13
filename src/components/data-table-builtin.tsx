@@ -84,12 +84,12 @@ export function DataTable() {
 
   React.useEffect(function () {
     // getting all the items from the backend 
-    fetch(BACKEND_URL + "adsbanner").then(async (m) => {
+    fetch(BACKEND_URL + "adsbanner",{credentials:"include"}).then(async (m) => {
       let data = await m.json()
       setBannerList(data.banner)
       // keeping this data in the react.useMemo for lifecycle of component.
     }).catch(err => console.log(err))
-    fetch(BACKEND_URL + "defaultpreorder").then(async (m) => {
+    fetch(BACKEND_URL + "defaultpreorder",{credentials:"include"}).then(async (m) => {
       let data = await m.json()
       setPreorderList(data.defaultValue)
       // keeping this data in the react.useMemo for lifecycle of component.
@@ -429,14 +429,14 @@ function DialogViewer({ type, value, changes, onclickValue, setValue, disableTru
 
   React.useEffect(function () {
     if (type == "brand") {
-      fetch(BACKEND_URL! + "brand").then(async (m) => {
+      fetch(BACKEND_URL! + "brand",{credentials:"include"}).then(async (m) => {
         let data = await m.json()
         setBrandList(data.data)
         setFilterValue(data.data);
       }).catch(err => console.log(err))
     } else if (type == "unit") {
 
-      fetch(BACKEND_URL! + "unit").then(async (m) => {
+      fetch(BACKEND_URL! + "unit",{credentials:"include"}).then(async (m) => {
         let data = await m.json()
         setUnitList(data.data)
       }).catch(err => console.log(err))

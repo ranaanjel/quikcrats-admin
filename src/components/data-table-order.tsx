@@ -90,7 +90,7 @@ export function DataTable() {
 
   React.useEffect(function () {
     // getting all the items from the backend 
-    fetch(BACKEND_URL + "orderData").then(async (m) => {
+    fetch(BACKEND_URL + "orderData",{credentials:"include"}).then(async (m) => {
       let data = await m.json()
       let allData = (data.orderData);
       let pendingData = allData.filter((m: { orderStatus: string }) => {
@@ -103,7 +103,7 @@ export function DataTable() {
       // keeping this data in the react.useMemo for lifecycle of component.
     }).catch(err => console.log(err))
 
-    fetch(BACKEND_URL + "allzone").then(async m => {
+    fetch(BACKEND_URL + "allzone",{credentials:"include"}).then(async m => {
 
       let data = await m.json()
       setZoneList(data.delivery)
@@ -889,14 +889,14 @@ function DialogViewer({ type, value, changes, onclickValue, setValue, disableTru
 
   React.useEffect(function () {
     if (type == "brand") {
-      fetch(BACKEND_URL! + "brand").then(async (m) => {
+      fetch(BACKEND_URL! + "brand",{credentials:"include"}).then(async (m) => {
         let data = await m.json()
         setBrandList(data.data)
         setFilterValue(data.data);
       }).catch(err => console.log(err))
     } else if (type == "unit") {
 
-      fetch(BACKEND_URL! + "unit").then(async (m) => {
+      fetch(BACKEND_URL! + "unit",{credentials:"include"}).then(async (m) => {
         let data = await m.json()
         setUnitList(data.data)
       }).catch(err => console.log(err))

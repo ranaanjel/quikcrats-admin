@@ -190,9 +190,9 @@ export function DataTable() {
             </TableHeader>
             <TableBody>
                 {
-                  data.map(m => {
+                  data.map((m,index) => {
 
-                    return <TableRow>
+                    return <TableRow key={index}>
                       <TableCell className="w-78">{m.item}</TableCell>
                       <TableCell className="w-64">{m.category}</TableCell>
                       <TableCell className="w-64">{m.subcategory}</TableCell>
@@ -224,9 +224,9 @@ export function DataTable() {
             </TableHeader>
             <TableBody>
                 {
-                  pending.map(m => {
+                  pending.map((m,index) => {
                     // console.log(m)
-                    return <TableRow>
+                    return <TableRow key={index}>
                       <TableCell className="w-78"><TableCellViewer item={m["order id"]}></TableCellViewer></TableCell>
                       <TableCell className="w-64">{m["customer name"]}</TableCell>
                       <TableCell className="w-64">{m["order value"]}</TableCell>

@@ -75,6 +75,7 @@ import { Checkbox } from "./ui/checkbox"
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog"
 import { Input } from "./ui/input"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./ui/accordion"
+import { useNavigate } from "react-router-dom"
 
 
 
@@ -91,10 +92,15 @@ export function DataTable() {
   let [gotData, setGotData] = React.useState<any[]>([]);
   let [filterGotData, setFilterGotData] = React.useState<any>([])
 
-
+  let navigate = useNavigate()
 
   let fetchData = React.useMemo(async function () {
-    let data = await (await fetch(BACKEND_URL + "items")).json()
+    let data = await (await fetch(BACKEND_URL + "items", {credentials:"include"})).json()
+    
+    if("object" in data  && data.object.includes("login")) {
+      navigate("/login");
+      localStorage.setItem("data", "")
+    }
     setGotData(data.data);
     setFilterGotData(data.data);
     return data.data;
@@ -105,7 +111,7 @@ export function DataTable() {
   React.useEffect(function () {
     console.log(gotData, filterGotData, fetchData)
     // getting all the items from the backend 
-    fetch(BACKEND_URL + "items").then(async (m) => {
+    fetch(BACKEND_URL + "items",{credentials:"include"}).then(async (m) => {
       let data = await m.json()
       setItemList(prev => {
         let newData = data.data.map((m: any) => ({ name: m.name, image: m.imageURL, category: m.categoryId, subcategory: m.subCategoryId, regexValue: m.regExp }));
@@ -338,7 +344,7 @@ function IndividualCreate() {
 
   React.useEffect(function () {
     let url = BACKEND_URL! + "all";
-    fetch(url).then(async (m) => {
+    fetch(url,{credentials:"include"}).then(async (m) => {
       let { unit, brand, category, subCategory } = await m.json();
       setUnitList(unit)
       setBrandList(brand)
@@ -845,7 +851,7 @@ function BulkCreate() {
 
   React.useEffect(function () {
     let url = BACKEND_URL! + "all";
-    fetch(url).then(async (m) => {
+    fetch(url,{credentials:"include"}).then(async (m) => {
       let { unit, brand, category, subCategory } = await m.json();
       setUnitList(unit)
       setBrandList(brand)
@@ -1562,14 +1568,14 @@ function DialogViewer({ type, value, changes, onclickValue, setValue, disableTru
 
   React.useEffect(function () {
     if (type == "brand") {
-      fetch(BACKEND_URL! + "brand").then(async (m) => {
+      fetch(BACKEND_URL! + "brand",{credentials:"include"}).then(async (m) => {
         let data = await m.json()
         setBrandList(data.data)
         setFilterValue(data.data);
       }).catch(err => console.log(err))
     } else if (type == "unit") {
 
-      fetch(BACKEND_URL! + "unit").then(async (m) => {
+      fetch(BACKEND_URL! + "unit",{credentials:"include"}).then(async (m) => {
         let data = await m.json()
         setUnitList(data.data)
       }).catch(err => console.log(err))
