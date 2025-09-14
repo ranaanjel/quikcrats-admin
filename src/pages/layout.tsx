@@ -11,7 +11,6 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect } from "react";
 import axios from "axios";
 import { BACKEND_URL } from "@/config";
-import { toast, Toaster } from "sonner";
 
 
 export function Layout() {

@@ -88,7 +88,7 @@ export function DataTable() {
 
   const clearTimeRef: React.RefObject<ReturnType<typeof setTimeout> | undefined> = React.useRef(undefined)
 
-  let [totalItem, setTotalItem] = React.useState(itemList.length);
+  let [_, setTotalItem] = React.useState(itemList.length);
   let [gotData, setGotData] = React.useState<any[]>([]);
   let [filterGotData, setFilterGotData] = React.useState<any>([])
 
@@ -419,7 +419,7 @@ function IndividualCreate() {
             {Object.values(categoryList).map((m, index) => {
               let [value] = Object.keys(m);
               let [key] = Object.values(m);
-
+                
               return <SelectItem key={index} value={value}>{value}</SelectItem>
             })}
           </SelectContent>

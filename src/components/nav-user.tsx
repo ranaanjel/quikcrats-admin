@@ -26,7 +26,10 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useSearchParams } from "react-router-dom"
+import axios from "axios"
+import { BACKEND_URL } from "@/config"
+import { useEffect, useState } from "react"
 
 export function NavUser({
   user,
@@ -39,6 +42,40 @@ export function NavUser({
 }) {
   const { isMobile } = useSidebar()
 let navigate=useNavigate();
+let [userName, setUserName] = useState("....");
+let [email, setEmail]  = useState("....");
+let [params, setParams] = useSearchParams()
+
+  useEffect(function(){
+    let data = JSON.parse(localStorage.getItem("data") as string || "{}");
+
+    console.log(data)
+    let user = "";
+    let email = "";
+    if(JSON.stringify(data) == "{}") {
+      user = params.get("user") ?? "";
+      email = params.get("email") ?? "";
+      localStorage.setItem("data", JSON.stringify({user_data:{username:user, email:email}}))
+
+      if(user == "" && email == "") {
+        let url = BACKEND_URL!+ "logout" 
+              axios.post(url,{
+              },{
+                withCredentials:true
+              }).then( () => {
+                  navigate('/login');
+                  localStorage.setItem("data","");
+              })
+      }
+    }else {
+      user = data?.user_data.username ?? "";
+      email = data?.user_data.email ?? "";
+
+    }
+    setUserName(user);
+    setEmail(email);
+  })
+
 
   return (
     <SidebarMenu>
@@ -50,13 +87,13 @@ let navigate=useNavigate();
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg grayscale">
-                <AvatarImage src={user.avatar} alt={user.name} />
+                <AvatarImage src={"/favicon.svg"} height={100} width={100} alt={user.name} />
                 <AvatarFallback className="rounded-lg">CN</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user.name}</span>
+                <span className="truncate font-medium">{userName}</span>
                 <span className="text-muted-foreground truncate text-xs">
-                  {user.email}
+                  {email}
                 </span>
               </div>
               <IconDotsVertical className="ml-auto size-4" />
@@ -68,24 +105,17 @@ let navigate=useNavigate();
             align="end"
             sideOffset={4}
           >
-            <DropdownMenuLabel className="p-0 font-normal">
-              <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
-                </Avatar>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user.name}</span>
-                  <span className="text-muted-foreground truncate text-xs">
-                    {user.email}
-                  </span>
-                </div>
-              </div>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
+            
             <DropdownMenuItem onClick={function () {
-              
-              navigate('/login');
+              let url = BACKEND_URL!+ "logout" 
+              axios.post(url,{
+              },{
+                withCredentials:true
+              }).then( m => {
+                  navigate('/login');
+                  localStorage.setItem("data","");
+              })
+
               // deleting the cookie - server event cookie to null
             }}>
               <IconLogout />
