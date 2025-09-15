@@ -52,9 +52,6 @@ const itemPricingColumns = [
 ]
 
 
-import itemPricingOrder from "@/itemPricing.json";
-
-
 import { Input } from "./ui/input"
 import { Trash2Icon } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
@@ -69,7 +66,6 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 
 export function DataTable() {
   const [category, setCategory] = React.useState<{name:string,value:number, default:boolean, id?:string}[]>([{name:"low",value:1, default:false},{name:"medium", default:true, value:1}, {default:false,name:"high", value:1}]);
-  const allData = itemPricingOrder;
   let categoryPricingId = React.useRef<Record<string, string>>({})
 
   const [defaultCategory, _]  = React.useState("all");
@@ -140,7 +136,7 @@ export function DataTable() {
   },[])
 
   function deleteCategoryPricing(id:string) {
-    toast.error("can't delete the category pricing once created, in v1")
+    toast.error("can't delete the category pricing once created, in v1 "+id)
   }
 
   function createCategoryPricing(name:string) {

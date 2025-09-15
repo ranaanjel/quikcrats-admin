@@ -76,12 +76,34 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import { Input } from "./ui/input"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./ui/accordion"
 import { useNavigate } from "react-router-dom"
+import axios from "axios"
 
-
+interface dataInterface { name: string, image: string, category: string, subcategory: string, regexValue: string }
+interface dataValue {
+              id: string,
+              imageURL: string,
+              disclaimer: string,
+              brandId: string,
+              productInfoId: {
+                shellLife:string,
+                storageTemperature:string,
+                container:string
+              },
+              primarySize: number,
+              quantity:number,
+              unitId: string,
+              secondaryUnitId: string,
+              conversion:number ,
+              secondarySize: number,
+              outOfStock: boolean,
+              comingSoon:boolean,
+              maxOrder:number,
+              regExp: string
+            }
 
 export function DataTable() {
-  const [itemList, setItemList] = React.useState([{ name: "", image: "", category: "", subcategory: "", regexValue: "" }]);
-  const [filterData, setFilterData] = React.useState([{ name: "", image: "", category: "", subcategory: "", regexValue: "" }]);
+  const [itemList, setItemList] = React.useState<dataInterface[]>([]);
+  const [filterData, setFilterData] = React.useState<dataInterface[]>([]);
 
   const pendingDataRef = React.useRef<HTMLButtonElement>(null)
   const itemRequirementRef = React.useRef<HTMLButtonElement>(null);
@@ -95,9 +117,9 @@ export function DataTable() {
   let navigate = useNavigate()
 
   let fetchData = React.useMemo(async function () {
-    let data = await (await fetch(BACKEND_URL + "items", {credentials:"include"})).json()
-    
-    if("object" in data  && data.object.includes("login")) {
+    let data = await (await fetch(BACKEND_URL + "items", { credentials: "include" })).json()
+
+    if ("object" in data && data.object.includes("login")) {
       navigate("/login");
       localStorage.setItem("data", "")
     }
@@ -109,9 +131,9 @@ export function DataTable() {
 
 
   React.useEffect(function () {
-    console.log(gotData, filterGotData, fetchData)
+    // console.log(gotData, filterGotData, fetchData)
     // getting all the items from the backend 
-    fetch(BACKEND_URL + "items",{credentials:"include"}).then(async (m) => {
+    fetch(BACKEND_URL + "items", { credentials: "include" }).then(async (m) => {
       let data = await m.json()
       setItemList(prev => {
         let newData = data.data.map((m: any) => ({ name: m.name, image: m.imageURL, category: m.categoryId, subcategory: m.subCategoryId, regexValue: m.regExp }));
@@ -156,6 +178,7 @@ export function DataTable() {
           <Input placeholder="search a item" onChange={function (e) {
             let string = e.target.value.toLowerCase();
             clearTimeout(clearTimeRef.current);
+
             clearTimeRef.current = setTimeout(function () {
 
               let filterValue = itemList.filter(m => {
@@ -163,12 +186,16 @@ export function DataTable() {
                 let match = m.regexValue.match(regexPattern);
                 return match != null;
               });
+
               let filterGotData = gotData.filter(m => {
                 let regexPattern = new RegExp(`${string}`, "i");
 
                 let match = m.regExp.match(regexPattern);
                 return match != null;
               })
+
+              console.log(filterValue, "-------------")
+
               setFilterGotData(filterGotData);
               setFilterData(filterValue);
             }, 1000)
@@ -187,8 +214,11 @@ export function DataTable() {
             </TableHeader>
             <TableBody>
               {
-                filterData[0].name != "" ? filterData.map((m, index) => {
-                  return <TableRow className="" key={m.name + index}>
+                filterData.length > 0 ? filterData.map((m, index) => {
+
+                  // console.log(filterData);
+
+                  return <TableRow className="" key={index}>
                     <TableCell className="w-32"><img width={75} height={75} src={m.image} alt="item-image" /></TableCell>
                     <TableCell className="w-64 capitalize"><TableCellViewer item={filterGotData[index]} /></TableCell>
                     <TableCell className="w-64">{m.category}</TableCell>
@@ -262,7 +292,7 @@ function IndividualCreate() {
     //   price:"",
     //   itemName:"",
     // }]
-    savingAmount: "",
+    savingAmount: 0,
     offersId: [],
     outOfStock: false,
     comingSoon: false,
@@ -276,7 +306,9 @@ function IndividualCreate() {
   let [filterSub, setFilterSub] = React.useState<string[]>([]);
   let [unitList, setUnitList] = React.useState<string[]>([]);
   let [open, setOpen] = React.useState(false)
+  let [brandOpen, setBrandOpen] = React.useState(false)
   let [createItemState, setCreateItemState] = React.useState(false);
+  let brandRef = React.useRef<HTMLInputElement>(null)
   // let [pricingCategoryList, setPricingCategoryList] = React.useState<string[]>([]);
 
 
@@ -305,7 +337,7 @@ function IndividualCreate() {
       conversion: z.number({ error: "make sure the conversion is number" }).optional(),
       priceId: z.number({ error: "make sure the price is number" }),
       discountPriceId: z.number({ error: "make sure the discount price is number" }),
-      savingAmount: z.string().default(""),
+      savingAmount: z.number().default(0),
       offersId: z.array(z.string()).default([]),
       outOfStock: z.boolean({ error: "select the value in out of stock" }),
       comingSoon: z.boolean({ error: "select the value in coming soon" }),
@@ -319,7 +351,6 @@ function IndividualCreate() {
     let secondaryUnitState = (createState.secondaryUnitId == "" && (createState.conversion != 0 || createState.secondarySize != 0)) || (createState.secondaryUnitId != "" && (createState.conversion == 0 || createState.secondarySize == 0));
 
     if (check.success) {
-
       if (secondaryUnitState) {
         console.log("error of secondary unit ")
         toast.error("Error has been occurred", {
@@ -328,12 +359,14 @@ function IndividualCreate() {
         return;
       } else {
         setCreateItemState(true);
+        //backend call 
+
       }
     }
     else {
       for (var error of (check.error.issues.slice(0, 3))) {
-
         // creating the sonner value and changing the value as well
+        console.log(error)
         toast.error("Error has been occurred", {
           description: error.message,
         })
@@ -344,7 +377,7 @@ function IndividualCreate() {
 
   React.useEffect(function () {
     let url = BACKEND_URL! + "all";
-    fetch(url,{credentials:"include"}).then(async (m) => {
+    fetch(url, { credentials: "include" }).then(async (m) => {
       let { unit, brand, category, subCategory } = await m.json();
       setUnitList(unit)
       setBrandList(brand)
@@ -462,7 +495,7 @@ function IndividualCreate() {
         </SelectContent>
       </Select>
 
-      <Dialog open={open} onOpenChange={setOpen} >
+      <Dialog open={brandOpen} onOpenChange={setBrandOpen} >
         <DialogTrigger asChild>
           <Button variant="outline">Create <IconPlus></IconPlus></Button>
         </DialogTrigger>
@@ -470,10 +503,25 @@ function IndividualCreate() {
           <DialogHeader>
             <DialogTitle>Create Brand</DialogTitle>
             <div className=" flex flex-col gap-4">
-              <Input></Input>
+              <Input ref={brandRef}></Input>
               <Button onClick={function () {
                 // sending the request to the backend
-                location.reload();
+                let data = brandRef.current?.value;
+
+                let url = BACKEND_URL + "createBrand";
+                axios.post(url, { data }, { withCredentials: true }).then(n => {
+                  
+                  let value = n.data;
+
+                  if (value.success) {
+                    toast.info(value.message)
+                    setTimeout(function () {
+                      location.reload();
+                    }, 1000)
+                  } else {
+                    toast.error(value.message)
+                  }
+                })
               }}>create</Button>
             </div>
 
@@ -760,7 +808,7 @@ function IndividualCreate() {
                       data += "  |  " + addon;
                     }
 
-                    return <div className="flex  justify-between ">
+                    return <div className="flex  justify-between " key={key}>
                       <span>{property}:</span>
                       <span className="underline self-end" >{typeof data == "object" ? Object.entries(data).map(function ([key, value]) {
 
@@ -783,7 +831,24 @@ function IndividualCreate() {
             }
           </div>
           <DialogFooter>
-            <Button disabled={!createItemState} type="submit" variant={"default"}>Create Item</Button>
+            <Button disabled={!createItemState} type="submit" variant={"default"} onClick={function() {
+              let url = BACKEND_URL + "individual";
+                axios.post(url, { data:createState }, { withCredentials: true }).then(n => {
+                  
+                  let value = n.data;
+
+                  if (value.success) {
+                    toast.info(value.message)
+                    setTimeout(function () {
+                      location.reload();
+                    }, 1000)
+                  } else {
+                    toast.error(value.message)
+                  }
+                })
+              
+              
+            }}>Create Item</Button>
             <DialogClose asChild>
               <Button variant="outline">Cancel</Button>
             </DialogClose>
@@ -805,53 +870,53 @@ function BulkCreate() {
   let [unitList, setUnitList] = React.useState<string[]>([]);
   let [sumbitFinalData, setSubmitFinalData] = React.useState<boolean>(false)
   let [finalData, setFinalData] = React.useState<{
-        name: string,
-        imageURL: string,
-        buttonURL: string,
-        disclaimer: string,
-        brandId: string,
-        categoryId: string,
-        subCategoryId: string,
-        productInfoId: {
-          itemName: string,
-          category: string,
-          shellLife: string,
-          storageTemperature: string,
-          container: string
-        },
-        quantity: number,
-        primarySize: number,
-        unitId: string,
-        secondarySize: number,
-        secondaryUnitId: string,
-        conversion: number,
-        priceId: number,
-        discountPriceId: number,
-        savingAmount: string,
-        offersId:[],
-        outOfStock:boolean,
-        comingSoon:false,
-        maxOrder:number,
-        regExp: string,
-        unitInHouse: 1
-      }[]>([])
+    name: string,
+    imageURL: string,
+    buttonURL: string,
+    disclaimer: string,
+    brandId: string,
+    categoryId: string,
+    subCategoryId: string,
+    productInfoId: {
+      itemName: string,
+      category: string,
+      shellLife: string,
+      storageTemperature: string,
+      container: string
+    },
+    quantity: number,
+    primarySize: number,
+    unitId: string,
+    secondarySize: number,
+    secondaryUnitId: string,
+    conversion: number,
+    priceId: number,
+    discountPriceId: number,
+    savingAmount: number,
+    offersId: [],
+    outOfStock: boolean,
+    comingSoon: false,
+    maxOrder: number,
+    regExp: string,
+    unitInHouse: 1
+  }[]>([])
   let listRef = React.useRef<Record<string, string[]>>({
     "brandlist": [],
     "unitlist": [],
     "categorylist": [],
-    "subcategorylist":[]
+    "subcategorylist": []
   })
-  let objecIdRef = React.useRef<Record<string, Record<string,string>>>({
+  let objecIdRef = React.useRef<Record<string, Record<string, string>>>({
     "brandlist": {},
     "unitlist": {},
     "categorylist": {},
-    "subcategorylist":{}
+    "subcategorylist": {}
   })
   let fileRef = React.useRef<HTMLInputElement>(null)
 
   React.useEffect(function () {
     let url = BACKEND_URL! + "all";
-    fetch(url,{credentials:"include"}).then(async (m) => {
+    fetch(url, { credentials: "include" }).then(async (m) => {
       let { unit, brand, category, subCategory } = await m.json();
       setUnitList(unit)
       setBrandList(brand)
@@ -869,8 +934,8 @@ function BulkCreate() {
       imageURL: z.string().min(5, { message: "please make sure the value has at least 5 characters" }),
       buttonURL: z.string(),
       disclaimer: z.string().min(10, { message: "please make sure the value has at least 10 characters" }),
-      brandId: z.enum(listRef.current["brandlist"],{ error:"make the data is in the list "}),
-      categoryId: z.enum( listRef.current["categorylist"], { message: "please make sure the category in the database" }),
+      brandId: z.enum(listRef.current["brandlist"], { error: "make the data is in the list " }),
+      categoryId: z.enum(listRef.current["categorylist"], { message: "please make sure the category in the database" }),
       subCategoryId: z.enum(listRef.current["subcategorylist"], { message: "please make sure the subcategory in the database" }),
       productInfoId: z.object({
         itemName: z.string(),
@@ -883,11 +948,11 @@ function BulkCreate() {
       primarySize: z.number({ error: "make sure the primary size is number" }),
       unitId: z.enum(listRef.current["unitlist"], { message: "please make sure the unit in the database" }),
       secondarySize: z.number({ error: "make sure the secondary size is number" }).optional(),
-      secondaryUnitId:z.enum(["",...listRef.current["unitlist"]], { message: "please make sure the unit in the database secondary." }).optional(),// z.string().length(24, { message: "please make sure the secondary value has 24 characters" }).optional().or(z.literal("")),
+      secondaryUnitId: z.enum(["", ...listRef.current["unitlist"]], { message: "please make sure the unit in the database secondary." }).optional(),// z.string().length(24, { message: "please make sure the secondary value has 24 characters" }).optional().or(z.literal("")),
       conversion: z.number({ error: "make sure the conversion is number" }).optional(),
       priceId: z.number({ error: "make sure the price is number" }),
       discountPriceId: z.number({ error: "make sure the discount price is number" }),
-      savingAmount: z.string().default(""),
+      savingAmount: z.number().default(0),
       offersId: z.array(z.string()).default([]),
       outOfStock: z.boolean({ error: "select the value in out of stock" }),
       comingSoon: z.boolean({ error: "select the value in coming soon" }),
@@ -900,7 +965,7 @@ function BulkCreate() {
     let newData = [];
 
     for (var eachRow of data) {
-      let createState:{
+      let createState: {
         name: string,
         imageURL: string,
         buttonURL: string,
@@ -923,11 +988,11 @@ function BulkCreate() {
         conversion: number,
         priceId: number,
         discountPriceId: number,
-        savingAmount: string,
-        offersId:[],
-        outOfStock:boolean,
-        comingSoon:false,
-        maxOrder:number,
+        savingAmount: number,
+        offersId: [],
+        outOfStock: boolean,
+        comingSoon: false,
+        maxOrder: number,
         regExp: string,
         unitInHouse: 1
       } = {
@@ -953,11 +1018,11 @@ function BulkCreate() {
         conversion: 0,
         priceId: 0,
         discountPriceId: 0,
-        savingAmount: "",
-        offersId:[],
-        outOfStock:false,
-        comingSoon:false,
-        maxOrder:0,
+        savingAmount: 0,
+        offersId: [],
+        outOfStock: false,
+        comingSoon: false,
+        maxOrder: 0,
         regExp: "",
         unitInHouse: 1
       }
@@ -965,69 +1030,69 @@ function BulkCreate() {
         createState = {
           name: eachRow[0]!,
           imageURL: eachRow[1]!,
-          buttonURL: "/item/"+eachRow[0].replace(/\s+/g, "_")!,
+          buttonURL: "/item/" + eachRow[0].replace(/\s+/g, "_")!,
           disclaimer: "The product may not be simlar to picture, the used picture is rather for general reference.",
           brandId: objecIdRef.current["brandlist"][eachRow[2]]!,
           categoryId: objecIdRef.current["categorylist"][eachRow[3]]!,
-          subCategoryId:objecIdRef.current["subcategorylist"][eachRow[4] ]!,
-          productInfoId : {
+          subCategoryId: objecIdRef.current["subcategorylist"][eachRow[4]]!,
+          productInfoId: {
             itemName: eachRow[0]!,
             category: eachRow[3]!,
             shellLife: eachRow[5]!,
-            storageTemperature:eachRow[6]! ,
-            container:eachRow[7]!
+            storageTemperature: eachRow[6]!,
+            container: eachRow[7]!
           },
-          quantity:Number(eachRow[8])!,
-          primarySize:Number(eachRow[8])!,
-          unitId:objecIdRef.current["unitlist"][eachRow[9]]!, 
+          quantity: Number(eachRow[8])!,
+          primarySize: Number(eachRow[8])!,
+          unitId: objecIdRef.current["unitlist"][eachRow[9]]!,
           secondarySize: 0,
-          secondaryUnitId:"",
+          secondaryUnitId: "",
           conversion: 0,
           priceId: Number(eachRow[10])!,
           discountPriceId: Number(eachRow[11])!,
-          savingAmount: "",
+          savingAmount: 0,
           offersId: [],
-          outOfStock: (eachRow[13]) == "FALSE"?false : true ,
+          outOfStock: (eachRow[13]) == "FALSE" ? false : true,
           comingSoon: false,
           maxOrder: 100,
           regExp: eachRow[12]!,
           unitInHouse: 1
         }
-      }else if (eachRow.length == 17) {
+      } else if (eachRow.length == 17) {
         createState = {
           name: eachRow[0]!,
           imageURL: eachRow[1]!,
-          buttonURL: "/item/"+eachRow[0].replace(/\s+/g, "_")!,
+          buttonURL: "/item/" + eachRow[0].replace(/\s+/g, "_")!,
           disclaimer: "The product may not be simlar to picture, the used picture is rather for general reference."!,
           brandId: objecIdRef.current["brandlist"][eachRow[2]]!,
           categoryId: objecIdRef.current["categorylist"][eachRow[3]]!,
-          subCategoryId:objecIdRef.current["subcategorylist"][eachRow[4]]!,
-          productInfoId : {
+          subCategoryId: objecIdRef.current["subcategorylist"][eachRow[4]]!,
+          productInfoId: {
             itemName: eachRow[0]!,
             category: eachRow[3]!,
             shellLife: eachRow[5]!,
-            storageTemperature:eachRow[6]! ,
-            container:eachRow[7]! 
+            storageTemperature: eachRow[6]!,
+            container: eachRow[7]!
           },
-          quantity:Number(eachRow[8])!,
-          primarySize:Number(eachRow[8])!,
-          unitId:objecIdRef.current["unitlist"][eachRow[9]]!, 
+          quantity: Number(eachRow[8])!,
+          primarySize: Number(eachRow[8])!,
+          unitId: objecIdRef.current["unitlist"][eachRow[9]]!,
           secondarySize: Number(eachRow[10]) as number,
-          secondaryUnitId:objecIdRef.current["unitlist"][eachRow[11]]!,
+          secondaryUnitId: objecIdRef.current["unitlist"][eachRow[11]]!,
           conversion: Number(eachRow[12])!,
           priceId: Number(eachRow[13])!,
           discountPriceId: Number(eachRow[14])!,
-          savingAmount: "",
+          savingAmount: 0,
           offersId: [],
-          outOfStock: (eachRow[16])=="FALSE"?false:true,
+          outOfStock: (eachRow[16]) == "FALSE" ? false : true,
           comingSoon: false,
           maxOrder: 100,
           regExp: eachRow[15]!,
-          unitInHouse: 1 
+          unitInHouse: 1
         }
       }
 
-      console.log( eachRow[9],objecIdRef.current["unitlist"][eachRow[9]] )
+      console.log(eachRow[9], objecIdRef.current["unitlist"][eachRow[9]])
 
       let check = schema.safeParse(createState);
       if (check.success) {
@@ -1036,7 +1101,7 @@ function BulkCreate() {
       else {
         for (var error of (check.error.issues.slice(0, 3))) {
           toast.error("Error has been occurred", {
-            description: error.message + "  product name : "+ createState.name,
+            description: error.message + "  product name : " + createState.name,
           })
 
         }
@@ -1079,12 +1144,12 @@ function BulkCreate() {
             brandList.length > 1 && brandList.map((m) => {
               let [value] = Object.keys(m);
               value = value.replace(/\s/g, "_")
-              
+
               let [objectId] = Object.values(m);
-              
+
               objecIdRef.current["brandlist"][value] = objectId;
-              if(!listRef.current["brandlist"].includes(objectId)) {
-                  listRef.current["brandlist"].push(objectId);
+              if (!listRef.current["brandlist"].includes(objectId)) {
+                listRef.current["brandlist"].push(objectId);
               }
 
               return value
@@ -1101,9 +1166,9 @@ function BulkCreate() {
 
               let [objectId] = Object.values(m);
               objecIdRef.current["categorylist"][value] = objectId;
-              if(!listRef.current["categorylist"].includes(objectId)) {
+              if (!listRef.current["categorylist"].includes(objectId)) {
 
-              listRef.current["categorylist"].push(objectId);
+                listRef.current["categorylist"].push(objectId);
               }
               return <div key={value}>
                 {value}
@@ -1124,12 +1189,12 @@ function BulkCreate() {
 
                     let [value] = Object.keys(m);
                     value = value.replace(/(,|&)/g, "").replace(/\s+/g, "_");
-                    
+
                     let [objectId] = Object.values(m);
                     objecIdRef.current["subcategorylist"][value] = objectId;
-                    if(!listRef.current["subcategorylist"].includes(objectId)) {
+                    if (!listRef.current["subcategorylist"].includes(objectId)) {
 
-                        listRef.current["subcategorylist"].push(objectId)
+                      listRef.current["subcategorylist"].push(objectId)
                     }
 
                     return <div key={value}>
@@ -1159,9 +1224,9 @@ function BulkCreate() {
               let [value] = Object.keys(m);
               let [objectId] = Object.values(m);
               objecIdRef.current["unitlist"][value] = objectId;
-              if(!listRef.current["unitlist"].includes(objectId)) {
+              if (!listRef.current["unitlist"].includes(objectId)) {
 
-              listRef.current["unitlist"].push(objectId)
+                listRef.current["unitlist"].push(objectId)
               }
               return value
             }).join(",\n")
@@ -1234,7 +1299,7 @@ function BulkCreate() {
 
             return false;
           });
-      
+
 
           if (lengthFilter.length > 0) {
             lengthFilter.forEach(m => {
@@ -1246,7 +1311,7 @@ function BulkCreate() {
           }
 
           // second check if the data are correct and types
-          if(await checkData(tableRow)) {
+          if (await checkData(tableRow)) {
 
           } else {
 
@@ -1263,59 +1328,59 @@ function BulkCreate() {
       <br></br>In case of prices as well as discount price, the same value will be assigned to all the category pricing.
     </div>
     <Toaster></Toaster>
-   { (sumbitFinalData) && <Dialog open={sumbitFinalData} onOpenChange={setSubmitFinalData} >
+    {(sumbitFinalData) && <Dialog open={sumbitFinalData} onOpenChange={setSubmitFinalData} >
       <DialogContent className="">
         <DialogHeader>
           <DialogTitle>List of items</DialogTitle>
           <DialogDescription>
-            all the items will go database, in case of duplicates item, the item will not going to get registered. 
+            all the items will go database, in case of duplicates item, the item will not going to get registered.
           </DialogDescription>
         </DialogHeader>
         <div className=" min-h-[80vh] overflow-scroll border border-white/20 rounded px-2">
-            <Accordion
-      type="single"
-      collapsible
-      className="w-full"
-      defaultValue="1"
-    >
-   {
-    finalData.map((m,key) => {
-      let dataFinal = Object.entries(m);
+          <Accordion
+            type="single"
+            collapsible
+            className="w-full"
+            defaultValue="1"
+          >
+            {
+              finalData.map((m, key) => {
+                let dataFinal = Object.entries(m);
 
-      return <AccordionItem value={String(key+1)} key={key}>
-        <AccordionTrigger>{m.name}</AccordionTrigger>
-        <AccordionContent className="flex flex-col gap-1   text-balance">
-         {
-          dataFinal.map(([key,value]) => {
+                return <AccordionItem value={String(key + 1)} key={key}>
+                  <AccordionTrigger>{m.name}</AccordionTrigger>
+                  <AccordionContent className="flex flex-col gap-1   text-balance">
+                    {
+                      dataFinal.map(([key, value]) => {
 
-            return <div className="flex">
-              <span className="underline w-1/2">{key} </span>:&nbsp;&nbsp; <span className="w-1/2">{typeof value == "object" ? Object.entries(value).map(function ([key, value]) {
-                return <div className="pl-4">
-                  {key}:{value}
-                </div>
-              }) : value.toString()}</span>
-            </div>
-          })
-         }
-        </AccordionContent>
-      </AccordionItem>
-    })
-   }
- 
-    </Accordion>
+                        return <div className="flex">
+                          <span className="underline w-1/2">{key} </span>:&nbsp;&nbsp; <span className="w-1/2">{typeof value == "object" ? Object.entries(value).map(function ([key, value]) {
+                            return <div className="pl-4">
+                              {key}:{value}
+                            </div>
+                          }) : value.toString()}</span>
+                        </div>
+                      })
+                    }
+                  </AccordionContent>
+                </AccordionItem>
+              })
+            }
+
+          </Accordion>
         </div>
         <DialogFooter>
           <DialogClose asChild>
-            <Button  variant="outline">Cancel</Button>
+            <Button variant="outline">Cancel</Button>
           </DialogClose>
-          <Button onClick={()=> {
+          <Button onClick={() => {
             alert("add funtionality to database")
             setSubmitFinalData(false)
           }} type="submit">Confirm</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-}
+    }
   </div>
 }
 
@@ -1328,9 +1393,24 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
   const classInputValue = "focus:outline-none focus:border underline"
   const editCheckRef = React.useRef<HTMLButtonElement>(null);
   const dataChange = React.useRef<Record<string, any>>({});
+  const [changes, setChanges] = React.useState<dataValue>({id: "",
+              imageURL:  "",
+              disclaimer: "",
+              brandId: "",
+              productInfoId: { shellLife: "", container: "", storageTemperature: "" },
+              primarySize:  0,
+              quantity:  0,
+              unitId: "",
+              secondaryUnitId: "",
+              conversion:  0,
+              secondarySize:  0,
+              outOfStock: false,
+              comingSoon: false,
+              maxOrder:  0,
+              regExp: ""})
   const [brandValue, setBrandValue] = React.useState<string>(item.brandId);
   const [firstUnitValue, setFirstUnitValue] = React.useState<string>(item.unitId);
-  const [secondaryUnitValue, setSecondaryUnitValue] = React.useState<string>(item.brandId);
+  const [secondaryUnitValue, setSecondaryUnitValue] = React.useState<string>(item.secondaryUnitId);
 
   return (
     <Drawer onClose={function () {
@@ -1391,11 +1471,22 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-3">
               <div className="text-xl">Image URL</div>
-              <input className={classInputValue} disabled={savedValue} defaultValue={item?.["imageURL"]} />
+              <input className={classInputValue} onChange={function (e) {
+                dataChange.current["imageURL"] = (e.target.value).trim();
+                setChanges(prev => {
+  
+                  return {...prev, imageURL:e.target.value.trim()}
+                })
+              }} disabled={savedValue} defaultValue={item?.["imageURL"]} />
             </div>
             <div className="flex flex-col gap-3">
               <div className="text-xl">Disclaimer</div>
-              <input className={classInputValue} disabled={savedValue} defaultValue={item?.["disclaimer"]} />
+              <input className={classInputValue} onChange={function (e) {
+                dataChange.current["disclaimer"] = (e.target.value).trim();
+                setChanges(prev => {
+                  return {...prev, disclaimer:e.target.value.trim()}
+                })
+              }} disabled={savedValue} defaultValue={item?.["disclaimer"]} />
             </div>
             <div className="flex flex-col gap-3">
               <div className="flex gap-3 items-center">
@@ -1408,20 +1499,62 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
               <div className="text-xl">Product info</div>
               <Label>
                 Shell Life
-                <input className={classInputValue} disabled={savedValue} defaultValue={item?.["productInfoId"]["shellLife"]} />
+                <input className={classInputValue} onChange={function (e) {
+                  if (!dataChange.current["productInfoId"]) {
+                    dataChange.current["productInfoId"] = {}
+                  }
+
+                  
+                  dataChange.current["productInfoId"]["shellLife"] = (e.target.value).trim();
+                  setChanges(prev => {
+  
+                  return {...prev, productInfoId:{...prev.productInfoId, shellLife:(e.target.value).trim()}}
+                })
+                  console.log(dataChange.current)
+                }} disabled={savedValue} defaultValue={item?.["productInfoId"]["shellLife"]} />
               </Label>
               <Label>
                 Storage Temperature
-                <input className={classInputValue} disabled={savedValue} defaultValue={item?.["productInfoId"]["storageTemperature"]} />
+                <input className={classInputValue}  onChange={function (e) {
+                  if (!dataChange.current["productInfoId"]) {
+                    dataChange.current["productInfoId"] = {}
+                  }
+                
+                  dataChange.current["productInfoId"]["storageTemperature"] = (e.target.value).trim();
+                  setChanges(prev => {
+  
+                  return {...prev, productInfoId:{...prev.productInfoId, storageTemperature:(e.target.value).trim()}}
+                })
+                  console.log(dataChange.current)
+                }} disabled={savedValue} defaultValue={item?.["productInfoId"]["storageTemperature"]} />
               </Label>
               <Label>
                 Container
-                <input className={classInputValue} disabled={savedValue} defaultValue={item?.["productInfoId"]["container"]} />
+                <input className={classInputValue} onChange={function (e) {
+                  if (!dataChange.current["productInfoId"]) {
+                    dataChange.current["productInfoId"] = {}
+                  }
+
+                  dataChange.current["productInfoId"]["container"] = (e.target.value).trim();
+                  setChanges(prev => {
+  
+                  return {...prev, productInfoId:{...prev.productInfoId, container:(e.target.value).trim()}}
+                })
+                }} disabled={savedValue} defaultValue={item?.["productInfoId"]["container"]} />
               </Label>
             </div>
             <div className="flex flex-col gap-3">
               <div className="text-xl">Primary Size / Quantity</div>
-              <input className={classInputValue} disabled={savedValue} defaultValue={item?.["primarySize"]} />
+              <input className={classInputValue} onChange={function (e) {
+
+
+                dataChange.current["quantity"] = Number((e.target.value).trim());
+                setChanges(prev => {
+  
+                  return {...prev,quantity: Number((e.target.value).trim()),primarySize: Number((e.target.value).trim()) }
+                })
+
+              }} disabled={savedValue} defaultValue={item?.["primarySize"]} />
             </div>
             <div className="flex flex-col gap-3 tems-center">
               <div className="flex gap-3 items-center">
@@ -1431,6 +1564,7 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
                   {firstUnitValue}
                 </div>
               </div>
+              <Badge variant={"destructive"}>changing results in no previous offers</Badge>
               <DialogViewer disableTrue={savedValue} type="unit" value={"Change the Primary unit"} setValue={setFirstUnitValue}></DialogViewer>
 
             </div>
@@ -1439,17 +1573,34 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
 
                 <div className="text-xl">Secondary Unit</div>
                 <div>
-                  {secondaryUnitValue}
+                  {secondaryUnitValue || "none"}
                 </div>
               </div>
               <DialogViewer disableTrue={savedValue} type="unit" value={"Change the Secondary unit"} setValue={setSecondaryUnitValue}></DialogViewer></div>
             <div className="flex flex-col gap-3">
               <div className="text-xl">Secondary Size</div>
-              <input className={classInputValue} disabled={savedValue} placeholder={item?.["secondaryUnitId"] || "no value in db"} defaultValue={item?.["secondarySize"]} />
+              <input className={classInputValue} onChange={function (e) {
+
+
+                dataChange.current["secondarySize"] = Number((e.target.value).trim());
+                  setChanges(prev => {
+  
+                  return {...prev,secondarySize: Number((e.target.value).trim()) }
+                })
+
+              }} disabled={savedValue} placeholder={item?.["secondaryUnitId"] || "no value in db"} defaultValue={item?.["secondarySize"]} />
             </div>
             <div className="flex flex-col gap-3">
               <div className="text-xl">Conversion</div>
-              <input className={classInputValue} disabled={savedValue} placeholder={item?.["secondaryUnitId"] || "no value in db"} defaultValue={item?.["conversion"]} />
+              <input className={classInputValue} onChange={function (e) {
+
+
+                dataChange.current["conversion"] = Number((e.target.value).trim());
+                 setChanges(prev => {
+  
+                  return {...prev,conversion: Number((e.target.value).trim()) }
+                })
+              }} disabled={savedValue} placeholder={item?.["secondaryUnitId"] || "no value in db"} defaultValue={item?.["conversion"]} />
             </div>
             <div className="flex flex-col gap-3">
               <div className="text-xl">MRP <Badge>no changes here</Badge></div>
@@ -1499,13 +1650,19 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
                   </div>
                 })
               }
-              <DialogViewer disableTrue={savedValue} type="offers" value="create new offers or delete existing one" changes={item.offersId}></DialogViewer>
+              <DialogViewer disableTrue={savedValue} itemId={item.id} unitId={item.unitId} type="offers" value="create new offers or delete existing one" changes={item.offersId}></DialogViewer>
             </div>
             <div className="flex flex-col gap-3">
               <div className="text-xl">Out Of Stock</div>
 
-              <Select defaultValue={item.outOfStock ? "true" : "false"} disabled={savedValue}>
-                <SelectTrigger id="comingsoon" className="w-full">
+              <Select defaultValue={item.outOfStock ? "true" : "false"} onValueChange={(value) => {
+                dataChange.current["outOfStock"] = value == "true" ? true : false;
+                 setChanges(prev => {
+  
+                  return {...prev,outOfStock: value == "true" ? true : false }
+                })
+              }} disabled={savedValue}>
+                <SelectTrigger id="outOfStock" className="w-full">
                   <SelectValue placeholder="Select a options" />
                 </SelectTrigger>
                 <SelectContent>
@@ -1518,7 +1675,13 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
             </div>
             <div className="flex flex-col gap-3">
               <div className="text-xl">Coming soon</div>
-              <Select defaultValue={item.comingSoon ? "true" : "false"} disabled={savedValue}>
+              <Select defaultValue={item.comingSoon ? "true" : "false"} onValueChange={value => {
+                dataChange.current["comingSoon"] = value == "true" ? true : false;
+                setChanges(prev => {
+  
+                  return {...prev,comingSoon: value == "true" ? true : false }
+                })
+              }} disabled={savedValue}>
                 <SelectTrigger id="comingsoon" className="w-full">
                   <SelectValue placeholder="Select a options" />
                 </SelectTrigger>
@@ -1532,11 +1695,23 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
             </div>
             <div className="flex flex-col gap-3">
               <div className="text-xl">Max Order Unit</div>
-              <input type="number" className={classInputValue} disabled={savedValue} defaultValue={item?.["maxOrder"]} />
+              <input type="number" onChange={function (e) {
+                
+                dataChange.current["maxOrder"] = Number((e.target.value).trim());
+                setChanges(prev => {
+  
+                  return {...prev,maxOrder:Number((e.target.value).trim()) }
+                })
+              }} className={classInputValue} disabled={savedValue} defaultValue={item?.["maxOrder"]} />
             </div>
             <div className="flex flex-col gap-3">
               <div className="text-xl">Search Value</div>
-              <input className={classInputValue} disabled={savedValue} defaultValue={item?.["regExp"]} />
+              <input className={classInputValue} onChange={function (e) {
+                dataChange.current["regExp"] = String((e.target.value).trim());
+                setChanges(prev => {
+                  return {...prev,regExp:String((e.target.value).trim()) }
+                })
+              }} disabled={savedValue} defaultValue={item?.["regExp"]} />
             </div>
             <div className="flex flex-col gap-3">
               <div className="text-xl">Inventory <Badge className="" variant={"destructive"}>WIP</Badge></div>
@@ -1546,8 +1721,12 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
           </div>
         </div>
         <DrawerFooter>
-          <DialogViewer type="submit" value="Submit to database" changes={dataChange.current} onclickValue={function () { }}></DialogViewer>
-          <DialogViewer type="submit" value="Delete item in database" changes={dataChange.current} onclickValue={function () { }}></DialogViewer>
+          <DialogViewer type="submit" value="Submit to database" brandId={brandValue} unitId={firstUnitValue} secondaryUnitId={secondaryUnitValue} itemId={item.id} changes={changes} onclickValue={function () {
+
+          }}></DialogViewer>
+          <DialogViewer type="submit" value="Delete item in database" changes={dataChange.current} onclickValue={function () {
+            toast.error("Not allowed in v1")
+          }}></DialogViewer>
           <DrawerClose asChild>
             <Button variant="outline">Done</Button>
           </DrawerClose>
@@ -1557,7 +1736,9 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
   )
 }
 
-function DialogViewer({ type, value, changes, onclickValue, setValue, disableTrue }: { type: "alert" | "confirm" | "offers" | "unit" | "submit" | "brand", value?: string, changes?: any, onclickValue?: () => void, setValue?: React.Dispatch<React.SetStateAction<any>>, disableTrue?: boolean }) {
+
+
+function DialogViewer({ type, value, changes, onclickValue, setValue, disableTrue, itemId, unitId, brandId, secondaryUnitId }: { brandId?: string, secondaryUnitId?: string, itemId?: string, unitId?: string, type: "alert" | "confirm" | "offers" | "unit" | "submit" | "brand", value?: string, changes?: dataValue|any, onclickValue?: () => void, setValue?: React.Dispatch<React.SetStateAction<any>>, disableTrue?: boolean }) {
 
   const [brandList, setBrandList] = React.useState<string[]>([]);
   const [unitList, setUnitList] = React.useState<string[]>([]);
@@ -1574,15 +1755,16 @@ function DialogViewer({ type, value, changes, onclickValue, setValue, disableTru
 
 
   React.useEffect(function () {
+
     if (type == "brand") {
-      fetch(BACKEND_URL! + "brand",{credentials:"include"}).then(async (m) => {
+      fetch(BACKEND_URL! + "brand", { credentials: "include" }).then(async (m) => {
         let data = await m.json()
         setBrandList(data.data)
-        setFilterValue(data.data);
+        setFilterValue(data.data)
       }).catch(err => console.log(err))
     } else if (type == "unit") {
 
-      fetch(BACKEND_URL! + "unit",{credentials:"include"}).then(async (m) => {
+      fetch(BACKEND_URL! + "unit", { credentials: "include" }).then(async (m) => {
         let data = await m.json()
         setUnitList(data.data)
       }).catch(err => console.log(err))
@@ -1593,9 +1775,12 @@ function DialogViewer({ type, value, changes, onclickValue, setValue, disableTru
 
 
   if (type == "confirm" || type == "submit" && !disableTrue) {
+
     return <Dialog >
       <DialogTrigger asChild>
-        <Button variant="default">{value?.split(" ")[0]}</Button>
+        <Button onClick={function () {
+          console.log(changes)
+        }} variant="default">{value?.split(" ")[0]}</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
@@ -1605,12 +1790,131 @@ function DialogViewer({ type, value, changes, onclickValue, setValue, disableTru
           </DialogDescription>
         </DialogHeader>
         {/* {changes} */}
+        <div className="flex flex-col gap-2">
+          <Badge >
+            if the column value is empty meaning no changes to that value
+          </Badge>
+          <div className="flex w-full justify-between">
+            <span>imageURL</span>
+            <span>{changes?.["imageURL"]}</span>
+          </div>
+          <div className="flex w-full justify-between">
+            <span>disclaimer</span>
+            <span>{changes?.["disclaimer"]}</span>
+          </div>
+          <div className="flex w-full justify-between">
+            <span>brand</span>
+            <span>{brandId}</span>
+          </div>
+          <div className="flex w-full justify-between gap-2">
+            <div>productInfoId</div>
+            {
+              changes?.["productInfoId"] && <div className="flex-col flex">
+                <span>shell life : {changes["productInfoId"]["shellLife"]} </span>
+                <span>storage temperature :{changes["productInfoId"]["storageTemperature"]} </span>
+                <span>container :{changes["productInfoId"]["container"]}  </span>
+              </div>
+            }
+          </div>
+          <div className="flex w-full justify-between">
+            <span>primary size / quantity </span>
+            <span>{String(changes?.["quantity"])}</span>
+          </div>
+          <div className="flex w-full justify-between">
+            <span>current unit</span>
+            <span>{unitId}</span>
+          </div>
+          <div>
+            <Badge variant={"destructive"}>if changes primary unit then results in deletion of all current offers</Badge>
+          </div>
+          <div className="flex w-full justify-between">
+            <span>secondary unit</span>
+            <span>{secondaryUnitId}</span>
+          </div>
+          <Badge variant={"destructive"}>secondary unit requires secondary size and conversion</Badge>
+          <div className="flex w-full justify-between">
+            <span>conversion</span>
+            <span>{changes?.["conversion"]}</span>
+          </div>
+          <div className="flex w-full justify-between">
+            <span>secondary size</span>
+            <span>{changes?.["secondarySize"]}</span>
+          </div>
+          <div className="flex w-full justify-between">
+            <span>outOfStock</span>
+            <span>{changes?.["outOfStock"]?"true":"false"}</span>
+          </div>
+          <div className="flex w-full justify-between">
+            <span>comingSoon</span>
+            <span>{changes?.["comingSoon"]?"true":"false"}</span>
+          </div>
+          <div className="flex w-full justify-between">
+            <span>maxOrder</span>
+            <span>{changes?.["maxOrder"]}</span>
+          </div>
+          <div className="flex w-full justify-between">
+            <span>regexValue</span>
+            <span>{changes?.["regExp"]}</span>
+          </div>
+        </div>
         <DialogFooter>
           <DialogClose asChild>
             <Button variant="outline">Cancel</Button>
           </DialogClose>
-          <Button onClick={onclickValue} type="submit">Confirm</Button>
+          <Button onClick={function () {
+            if(!changes) {
+              return;
+            }
+            if (onclickValue) onclickValue()
+            let dataToSend = {
+              id: itemId,
+              imageURL: changes["imageURL"] ?? "",
+              disclaimer: changes["disclaimer"] ?? "",
+              brandId: brandId,
+              productInfoId: changes["productInfoId"] ?? { shellLife: "", container: "", storageTemperature: "" },
+              primarySize: changes["quantity"] ?? 0,
+              quantity: changes["quantity"] ?? 0,
+              unitId: unitId,
+              secondaryUnitId: secondaryUnitId,
+              conversion: changes["conversion"] ?? 0,
+              secondarySize: changes["secondarySize"] ?? 0,
+              outOfStock: changes["outOfStock"] ?? false,
+              comingSoon: changes["comingSoon"] ?? false,
+              maxOrder: changes["maxOrder"] ?? 0,
+              regExp: changes["regExp"] ?? ""
+            }
+            if (!dataToSend.secondaryUnitId) {
+              // irrespective of data in there
+              dataToSend.conversion = 0;
+              dataToSend.secondarySize = 0;
+            } else if (dataToSend.secondaryUnitId && (dataToSend.conversion == 0 || dataToSend.secondarySize == 0)) {
+              toast.error("make sure to have the conversion and secondary size when creating secondary unit")
+              return;
+            }
+
+            console.log(dataToSend)
+            let url = BACKEND_URL + "individual ";
+
+            axios.put(url, {data:dataToSend}, { withCredentials: true }).then(value => {
+              let data = value.data;
+              
+              if (data.success) {
+                toast.info(data.message + ' refreshing')
+                setTimeout(function () {
+                  location.reload();
+                }, 900)
+              } else {
+                toast.error(data.message)
+              }
+            }).catch(err => {
+              console.log(err, "error")
+            })
+
+
+
+          }} type="submit">Confirm</Button>
         </DialogFooter>
+        <Toaster></Toaster>
       </DialogContent>
     </Dialog>
 
@@ -1699,10 +2003,11 @@ function DialogViewer({ type, value, changes, onclickValue, setValue, disableTru
                 {
                   filterValue.length > 0 && filterValue.map((m, index) => {
                     return <div key={index} className="border p-2 hover:bg-white hover:text-black" onClick={function () {
-                      console.log(m)
+
+
                       if (setValue) setValue(m);
                       if (onclickValue) onclickValue();
-                      setOpen(false)
+                      setOpen(false);
                     }} >
                       {m}
                     </div>
@@ -1714,8 +2019,24 @@ function DialogViewer({ type, value, changes, onclickValue, setValue, disableTru
               create the brand
               <Input ref={brandRef}></Input>
               <Button onClick={function () {
-                if (setValue) setValue(brandRef.current?.value);
-                setOpen(false)
+
+                let data = brandRef.current?.value;
+
+                let url = BACKEND_URL + "createBrand";
+                axios.post(url, { data }, { withCredentials: true }).then(n => {
+                  let value = n.data;
+                  if (value.success) {
+                    toast.info(value.message)
+                    if (setValue) setValue(brandRef.current?.value);
+                    setOpen(false)
+                    setTimeout(function () {
+                      location.reload();
+                    }, 500)
+                  } else {
+                    toast.error(value.message)
+                  }
+                })
+
               }}>create</Button>
             </div>
 
@@ -1727,6 +2048,7 @@ function DialogViewer({ type, value, changes, onclickValue, setValue, disableTru
             <Button variant="outline">Cancel</Button>
           </DialogClose>
         </DialogFooter>
+        <Toaster></Toaster>
       </DialogContent>
     </Dialog>
   } else if (type == "offers" && !disableTrue) {
@@ -1740,7 +2062,22 @@ function DialogViewer({ type, value, changes, onclickValue, setValue, disableTru
           <div aria-describedby="dialog description" className="flex flex-col gap-4">
             {changes.length > 0 && changes.map((m: any, index: number) => {
               return <div key={index} onClick={function () {
-                console.log(m)
+
+                let url = BACKEND_URL + "offer/" + m.id + "/" + itemId;
+                axios.delete(url, { withCredentials: true }).then(n => {
+                  let value = n.data;
+                  if (value.success) {
+
+                    toast.success(value.message)
+
+                    setTimeout(function () {
+                      location.reload();
+                    }, 900)
+                  } else {
+                    toast.error(value.message)
+                  }
+                })
+
               }} className={"flex justify-between rounded items-center border p-2" + `${index == 0 ? " mt-4" : ""}`}>
                 Offer #{index}<Button size={"sm"} variant={"destructive"}><Trash className="size-4"></Trash></Button>
               </div>
@@ -1761,7 +2098,7 @@ function DialogViewer({ type, value, changes, onclickValue, setValue, disableTru
                 })
               }}></Input>
               <Input placeholder="unit is primary" disabled={true} ></Input>
-              <Select onValueChange={function (e) {
+              <Select defaultValue="false" onValueChange={function (e) {
                 let value = e == "true" ? true : false;
                 setOffers(prev => {
                   return { ...prev, superSaver: value }
@@ -1780,15 +2117,41 @@ function DialogViewer({ type, value, changes, onclickValue, setValue, disableTru
                   alert("please make sure the values are correct");
                 } else {
                   //TODO db call
-                  setOpen(false)
-                  console.log(offers)
-                  setOffers(prev => {
-                    return {
-                      price: 0,
-                      quantity: 0,
-                      superSaver: false
+
+                  let url = BACKEND_URL + "createOffer";
+                  // console.log(offers)
+                  axios.post(url, {
+                    data: {
+                      ...offers,
+                      unitId: unitId,
+                      itemId: itemId
+                    }
+                  }, { withCredentials: true }).then(n => {
+
+                    let value = n.data;
+                    console.log(value)
+                    if (value.success) {
+
+                      toast.success(value.message)
+
+                      setOffers(prev => {
+                        return {
+                          price: 0,
+                          quantity: 0,
+                          superSaver: false,
+
+                        }
+                      })
+                      setTimeout(function () {
+                        location.reload();
+                      }, 900)
+                    } else {
+                      toast.error(value.message)
                     }
                   })
+
+
+
                 }
               }} value={"Submit to database"}></Input>
             </div>
@@ -1800,6 +2163,7 @@ function DialogViewer({ type, value, changes, onclickValue, setValue, disableTru
             <Button variant="outline">Cancel</Button>
           </DialogClose>
         </DialogFooter>
+        <Toaster></Toaster>
       </DialogContent>
     </Dialog>
   } else {
