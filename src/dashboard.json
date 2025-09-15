@@ -63,7 +63,7 @@
   { "date": "2024-06-01", "sales": 178, "orders": 200 },
   { "date": "2024-06-02", "sales": 470, "orders": 410 },
   { "date": "2024-06-03", "sales": 103, "orders": 160 },
-  { "date": "2024-06-04", "sales": 439, "orders": 380 },
+  { "date": "2024-06-04", "sales": 0, "orders": 380 },
   { "date": "2024-06-05", "sales": 88, "orders": 140 },
   { "date": "2024-06-06", "sales": 294, "orders": 250 },
   { "date": "2024-06-07", "sales": 323, "orders": 370 },

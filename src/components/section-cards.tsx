@@ -11,6 +11,8 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { useEffect, useState } from "react"
+import { BACKEND_URL } from "@/config"
+import axios from "axios"
 
 
 export function SectionCards() {
@@ -46,6 +48,54 @@ export function SectionCards() {
   },])
   useEffect(function () {
     // using the recoil here for the current data - fetching from backend -- atom
+    let url = BACKEND_URL!+ "dashboardCard"
+    axios.get(url,{withCredentials:true}).then(data=>{
+      let {totalRevenue, totalCustomer, totalItems, totalOrder} = data.data.value;
+
+      console.log(data.data.value)
+      
+      setCardList(prev => {
+
+        prev[0].amount = totalRevenue.amount;
+        prev[0].change = totalRevenue.change;
+        prev[0].trend= totalRevenue.trend;
+        if(prev[0].trend == "up") {
+          prev[0].message = "trending up this month"
+        }else {
+          prev[0].message = "trending down this month month-on-month"
+        }
+
+        prev[1].amount = totalOrder.amount;
+        prev[1].change = totalOrder.change;
+        prev[1].trend= totalOrder.trend;
+        if(prev[1].trend == "up") {
+          prev[1].message = "trending up on basis of daily average no of order"
+        }else {
+          prev[1].message = "low no of order on average daily basis, last 10 days"
+        }
+
+        prev[2].amount = totalCustomer.amount;
+        prev[2].change = totalCustomer.change;
+        prev[2].trend= totalCustomer.trend;
+        if(prev[2].trend == "up") {
+          prev[2].message = "strong user retention this month"
+        }else {
+          prev[2].message = "poor user retention, based on active 30 days customer orders"
+        }
+        prev[3].amount = totalItems.amount;
+        prev[3].inStock= totalItems.instock;
+        prev[3].outStock= totalItems.outstock;
+
+        let newValue = [...prev]
+        console.log(newValue)
+        return newValue;
+      })
+      }).catch(err => {
+        console.log(err, "error occured")
+       
+
+    })
+
   },[])
   return (
     <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
@@ -59,7 +109,7 @@ export function SectionCards() {
           <CardAction>
             <Badge variant="outline">
                <Trend value={cardList[0].trend}></Trend>
-              {cardList[0].change}%
+              {Number(cardList[0].change).toFixed(2)}%
             </Badge>
           </CardAction>
         </CardHeader>
@@ -82,7 +132,7 @@ export function SectionCards() {
             <Badge variant="outline">
 
               <Trend value={cardList[1].trend}></Trend>
-              {cardList[1].change}%
+              {Number(cardList[1].change).toFixed(2)}%
             </Badge>
           </CardAction>
         </CardHeader>

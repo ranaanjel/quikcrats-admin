@@ -93,16 +93,16 @@ const itemRequirementColumns = [
     header: "Item name",
     classValue:"w-78"
   },
-  {
-    accessorKey: "category",
-    header: "Category",
-    classValue:"w-64"
-  }, 
-  {
-    accessorKey: "subcategory",
-    header: "Subcategory",
-    classValue:"w-64"
-  },
+  // {
+  //   accessorKey: "category",
+  //   header: "Category",
+  //   classValue:"w-64"
+  // }, 
+  // {
+  //   accessorKey: "subcategory",
+  //   header: "Subcategory",
+  //   classValue:"w-64"
+  // },
   {
     accessorKey: "quantity",
     header: "Quantity",
@@ -117,23 +117,90 @@ const itemRequirementColumns = [
 
 import pendingOrderData from "@/pendingorder.json";
 
-import itemRequirementData from "@/requirement.json";
 import { IconPlus } from "@tabler/icons-react"
 import { toast, Toaster } from "sonner"
+import { BACKEND_URL } from "@/config"
+
+interface DataReturn {
+  id: string, userContact: { name: string, phoneNo: string, email: string, },
+  userAddress: {
+    deliveryTiming: string, address: string, shopDetails: string, receiver: string, instruction: string[], pincode: string, tag: string, additionalNo: string, deliveryAvailable: boolean,
+  }
+  , deliveryStatus: string,
+  orderStatus: string,
+  restaurantName: string,
+  preferences: string, orderId: string,
+  createdAt: Date, deliveryDate: Date, totalValue: number,
+  saving: number, 
+  itemList: { items: { itemId: string, quant: number, skip: boolean, price: number[] }[] }
+}
 
 
 export function DataTable() {
-  const [data, setData] = React.useState(itemRequirementData);
-  const [pending, setPending] = React.useState(pendingOrderData)
-
-  const pendingDataRef = React.useRef<HTMLButtonElement>(null)
-  const itemRequirementRef = React.useRef<HTMLButtonElement >(null)
+  const [data, setData] = React.useState<{itemId:string, quant:number, unit:string}[]>([]);
+  const [pending, setPending] = React.useState<DataReturn[]>([])
  
   
 
   let [totalItem, setTotalItem] = React.useState(data.length);
   let [pendingOrder, setPendingOrder] = React.useState(pending.length);
 
+
+enum orderStatusInterface { // only checking in the admin side -- mostly done by the user - modified, place, cancelled -- completed on delivery completed
+  OrderModified = "order modified",
+  OrderCancelled = "order cancelled",
+  OrderPlaced = "order placed",
+  OrderCompleted = "order completed",
+}
+
+enum deliveryStatusInterface {
+  OrderReceived = "order received",
+  OrderInTransit = "order in transit",
+  OrderDelivered = "order delivered",
+}
+
+  React.useEffect(function(){
+     fetch(BACKEND_URL + "orderData",{credentials:"include"}).then(async (m) => {
+      let data = await m.json()
+      let allData = (data.orderData);
+      let pendingData = allData.filter((m: { orderStatus: string }) => {
+        return m.orderStatus == orderStatusInterface.OrderModified || m.orderStatus == orderStatusInterface.OrderPlaced
+      })
+      
+      setPending(pendingData);
+      let itemList:Record<string,{itemId:string, quant:number, unit:string}> = {}
+
+      pendingData.forEach((m:DataReturn) => {
+        (m.itemList.items).forEach(m=> {
+          let name = m.itemId;
+          let quant = m.quant;
+          let unit = "unit" in m ? String(m.unit) : "unit";
+
+          if(name in itemList) {
+              itemList[name].quant += quant;
+          }else {
+              itemList[name] = {
+                itemId: name,
+                quant,
+                unit 
+              }
+          }
+        });
+
+
+
+
+      })
+
+    let requirementItem = Object.values(itemList);
+    setData(requirementItem)
+    setTotalItem(requirementItem.length)
+    setPendingOrder(pendingData.length)
+    
+      // keeping this data in the react.useMemo for lifecycle of component.
+    }).catch(err => console.log(err))
+
+  },[])
 
   return (
     <Tabs
@@ -146,14 +213,14 @@ export function DataTable() {
         </Label>
         
         <TabsList className="**:data-[slot=badge]:bg-muted-foreground/30   **:data-[slot=badge]:size-5 **:data-[slot=badge]:rounded-full **:data-[slot=badge]:px-1 @4xl/main:flex">
-          <TabsTrigger ref={itemRequirementRef} value="item requirement">Item Requirement  <Badge
+          <TabsTrigger value="item requirement">Item Requirement  <Badge
             className=" text-white dark:bg-blue-600 h-8 min-w-8  rounded-full  font-mono tabular-nums"
             variant="default"
           >
             {totalItem}
           </Badge></TabsTrigger>
 
-          <TabsTrigger ref={pendingDataRef} value="pending order">
+          <TabsTrigger  value="pending order">
             Pending Order
             <Badge
               className="h-8 min-w-8 rounded-full  font-mono tabular-nums"
@@ -190,14 +257,14 @@ export function DataTable() {
             </TableHeader>
             <TableBody>
                 {
-                  data.map((m,index) => {
+                 data.length > 0 &&  data.map((m,index:number) => {
 
-                    return <TableRow key={index}>
-                      <TableCell className="w-78">{m.item}</TableCell>
-                      <TableCell className="w-64">{m.category}</TableCell>
-                      <TableCell className="w-64">{m.subcategory}</TableCell>
-                      <TableCell className="w-64">{m.quantity}</TableCell>
-                      <TableCell className="w-32">{m.unit}</TableCell></TableRow>
+                    return <TableRow className="" key={index}>
+                   
+                    <TableCell className="w-64">{m.itemId}</TableCell>
+                    <TableCell className="w-64">{m.quant}</TableCell>
+                    <TableCell className="w-64 overflow-ellipsis whitespace-nowrap overflow-hidden ">{m.unit}</TableCell>
+                  </TableRow>
                   })
                 }
             </TableBody>
@@ -211,36 +278,52 @@ export function DataTable() {
         value="pending order"
         className="flex flex-col px-4 lg:px-6"
       >
-       <div className="overflow-hidden rounded-lg border">
+     
+        <div className="overflow-hidden rounded-lg border">
           <Table>
             <TableHeader>
               <TableRow>
-               {
-                pendingOrderColumns.map(m=>{
-                  return <TableHead className={m.classValue} key={m.accessorKey}>{m.header}</TableHead>
-                })
-               } 
+                <TableHead >Order Id</TableHead>
+                <TableHead >Customer Contact</TableHead>
+                <TableHead >Restaurant Name</TableHead>
+                <TableHead >Preferences</TableHead>
+                <TableHead >Instruction</TableHead>
+                <TableHead >Address</TableHead>
+                <TableHead >Delivery Status</TableHead>
+                <TableHead >Order Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-                {
-                  pending.map((m,index) => {
-                    // console.log(m)
-                    return <TableRow key={index}>
-                      <TableCell className="w-78"><TableCellViewer item={m["order id"]}></TableCellViewer></TableCell>
-                      <TableCell className="w-64">{m["customer name"]}</TableCell>
-                      <TableCell className="w-64">{m["order value"]}</TableCell>
-                      <TableCell className="w-64">{m["zone"]}</TableCell>
-                      <TableCell className="w-32">{m["delivery status"]}</TableCell>
-                      <TableCell className="w-32">{m["order status"]}</TableCell>
-                      </TableRow>
-                  })
-                }
+              {
+                pending.length > 0 ? pending.map((m, index) => {
+                  let customerContact = m.userContact.name + " " + m.userContact.email + " " + m.userContact.phoneNo;
+                  let restaurantName = m.restaurantName;
+                  let preferences = m.preferences;
+                  let instructions = m.userAddress.instruction.join(", ");
+                  let address = m.userAddress.address;
+                  let deliveryStatus = m.deliveryStatus;
+                  let orderStatus = m.orderStatus
+
+
+                  return <TableRow className="" key={index}>
+                    <TableCell className="w-64 capitalize">
+                      {m.orderId}
+                    </TableCell>
+                    <TableCell className="w-64">{customerContact}</TableCell>
+                    <TableCell className="w-64">{restaurantName}</TableCell>
+                    <TableCell className="max-w-64 overflow-ellipsis whitespace-nowrap overflow-hidden ">{preferences}</TableCell>
+                    <TableCell className="max-w-64 overflow-ellipsis whitespace-nowrap overflow-hidden ">{instructions}</TableCell>
+                    <TableCell className="max-w-32 overflow-ellipsis whitespace-nowrap overflow-hidden ">{address}</TableCell>
+                    <TableCell className="w-32"><Badge>{deliveryStatus}</Badge></TableCell>
+                    <TableCell className="w-32"><Badge>{orderStatus}</Badge></TableCell>
+                  </TableRow>
+                }) : null
+              }
             </TableBody>
           </Table>
         </div>
         <div className="flex items-center justify-end px-4">
-      </div>
+        </div> 
       </TabsContent>
       <Toaster></Toaster>
     </Tabs>

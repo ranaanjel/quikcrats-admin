@@ -419,7 +419,7 @@ function IndividualCreate() {
             {Object.values(categoryList).map((m, index) => {
               let [value] = Object.keys(m);
               let [key] = Object.values(m);
-                
+
               return <SelectItem key={index} value={value}>{value}</SelectItem>
             })}
           </SelectContent>
@@ -829,7 +829,7 @@ function BulkCreate() {
         discountPriceId: number,
         savingAmount: string,
         offersId:[],
-        outOfStock:false,
+        outOfStock:boolean,
         comingSoon:false,
         maxOrder:number,
         regExp: string,
@@ -857,6 +857,7 @@ function BulkCreate() {
       setBrandList(brand)
       setCategoryList(category)
       setSubCategoryList(subCategory)
+      console.log(unit, brand, category, subCategory)
       setFilterSub(subCategory)
     }).catch(err => console.log(err))
 
@@ -924,7 +925,7 @@ function BulkCreate() {
         discountPriceId: number,
         savingAmount: string,
         offersId:[],
-        outOfStock:false,
+        outOfStock:boolean,
         comingSoon:false,
         maxOrder:number,
         regExp: string,
@@ -960,7 +961,7 @@ function BulkCreate() {
         regExp: "",
         unitInHouse: 1
       }
-      if (eachRow.length == 13) {
+      if (eachRow.length == 14) {
         createState = {
           name: eachRow[0]!,
           imageURL: eachRow[1]!,
@@ -986,13 +987,13 @@ function BulkCreate() {
           discountPriceId: Number(eachRow[11])!,
           savingAmount: "",
           offersId: [],
-          outOfStock: false,
+          outOfStock: (eachRow[13]) == "FALSE"?false : true ,
           comingSoon: false,
           maxOrder: 100,
           regExp: eachRow[12]!,
           unitInHouse: 1
         }
-      }else if (eachRow.length == 16) {
+      }else if (eachRow.length == 17) {
         createState = {
           name: eachRow[0]!,
           imageURL: eachRow[1]!,
@@ -1018,7 +1019,7 @@ function BulkCreate() {
           discountPriceId: Number(eachRow[14])!,
           savingAmount: "",
           offersId: [],
-          outOfStock: false,
+          outOfStock: (eachRow[16])=="FALSE"?false:true,
           comingSoon: false,
           maxOrder: 100,
           regExp: eachRow[15]!,
@@ -1196,6 +1197,10 @@ function BulkCreate() {
           <span>search value</span>
           <span>all relevant name for the item </span>
         </div>
+        <div className="border flex flex-col gap-2 p-2 min-w-72 ">
+          <span>out of stock</span>
+          <span>true or false </span>
+        </div>
       </div>
     </div>
     <div className="flex justify-center items-center p-4">
@@ -1217,21 +1222,23 @@ function BulkCreate() {
           let formattedData = data.split("\n").filter(m => m);
           let tableHeader = formattedData[0].split(",");
           let tableRow = formattedData.slice(1,).map(m => m.split(",").filter(m => m).map(m => m.trim()))
-          //first check i.e either 13 and 16 values
+          //first check i.e either 14 and 17 values
 
           let lengthFilter = tableRow.filter(m => {
 
             let length = m.length;
 
-            if (length != 16 && length != 13) {
+            if (length != 17 && length != 14) {
               return true;
             }
 
             return false;
           });
+      
+
           if (lengthFilter.length > 0) {
             lengthFilter.forEach(m => {
-              toast.error("Incomplete value : either have 13 values (without secondary unit or 16 values with secondary unit, conversion and secondary size", {
+              toast.error("Incomplete value : either have 14 values (without secondary unit or 17 values with secondary unit, conversion and secondary size", {
                 description: `item name : ${m[0]}`
               })
             })
@@ -1799,69 +1806,3 @@ function DialogViewer({ type, value, changes, onclickValue, setValue, disableTru
     return <Button>check edit to start making changes</Button>
   }
 }
-//  <div className="grid grid-cols-2 gap-4">
-//               <div className="flex flex-col gap-3">
-//                 <Label htmlFor="type">Type</Label>
-//                 <Select defaultValue={item}>
-//                   <SelectTrigger id="type" className="w-full">
-//                     <SelectValue placeholder="Select a type" />
-//                   </SelectTrigger>
-//                   <SelectContent>
-//                     <SelectItem value="Table of Contents">
-//                       Table of Contents
-//                     </SelectItem>
-//                     <SelectItem value="Executive Summary">
-//                       Executive Summary
-//                     </SelectItem>
-//                     <SelectItem value="Technical Approach">
-//                       Technical Approach
-//                     </SelectItem>
-//                     <SelectItem value="Design">Design</SelectItem>
-//                     <SelectItem value="Capabilities">Capabilities</SelectItem>
-//                     <SelectItem value="Focus Documents">
-//                       Focus Documents
-//                     </SelectItem>
-//                     <SelectItem value="Narrative">Narrative</SelectItem>
-//                     <SelectItem value="Cover Page">Cover Page</SelectItem>
-//                   </SelectContent>
-//                 </Select>
-//               </div>
-//               <div className="flex flex-col gap-3">
-//                 <Label htmlFor="status">Status</Label>
-//                 <Select defaultValue={item}>
-//                   <SelectTrigger id="status" className="w-full">
-//                     <SelectValue placeholder="Select a status" />
-//                   </SelectTrigger>
-//                   <SelectContent>
-//                     <SelectItem value="Done">Done</SelectItem>
-//                     <SelectItem value="In Progress">In Progress</SelectItem>
-//                     <SelectItem value="Not Started">Not Started</SelectItem>
-//                   </SelectContent>
-//                 </Select>
-//               </div>
-//             </div>
-//             <div className="grid grid-cols-2 gap-4">
-//               <div className="flex flex-col gap-3">
-//                 <Label htmlFor="target">Target</Label>
-//                 <Input id="target" defaultValue={item} />
-//               </div>
-//               <div className="flex flex-col gap-3">
-//                 <Label htmlFor="limit">Limit</Label>
-//                 <Input id="limit" defaultValue={item} />
-//               </div>
-//             </div>
-//             <div className="flex flex-col gap-3">
-//               <Label htmlFor="reviewer">Reviewer</Label>
-//               <Select defaultValue={item}>
-//                 <SelectTrigger id="reviewer" className="w-full">
-//                   <SelectValue placeholder="Select a reviewer" />
-//                 </SelectTrigger>
-//                 <SelectContent>
-//                   <SelectItem value="Eddie Lake">Eddie Lake</SelectItem>
-//                   <SelectItem value="Jamik Tashpulatov">
-//                     Jamik Tashpulatov
-//                   </SelectItem>
-//                   <SelectItem value="Emily Whalen">Emily Whalen</SelectItem>
-//                 </SelectContent>
-//               </Select>
-//             </div>

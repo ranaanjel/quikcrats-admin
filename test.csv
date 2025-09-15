@@ -1,2 +1,2 @@
-name,image,brand,category,subcategory,shelllife,storagetemperature,container,quantity,unit,secondarysize,secondaryunit,conversion,price,discount,searchvalue
-green capsicum, https://ik.imagekit.io/auctvhqov/green-capsicum-removebg-preview.png?updatedAt=1756908281129, generic, vegetables, indian_vegetable, 1-2 days, 15-22 °C, polythene,0.5,kg,100,82,green capsicum bell pepper shimla
+name,image,brand,category,subcategory,shelllife,storagetemperature,container,quantity,unit,secondarysize,secondaryunit,conversion,price,discount,searchvalue,out of stock
+green capsicum, https://ik.imagekit.io/auctvhqov/green-capsicum-removebg-preview.png?updatedAt=1756908281129, generic, vegetables, indian_vegetable, 1-2 days, 15-22 °C, polythene,0.5,kg,100,82,green capsicum bell pepper shimla,true,,,

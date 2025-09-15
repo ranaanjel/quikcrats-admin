@@ -30,6 +30,8 @@ import {
   ToggleGroupItem,
 } from "@/components/ui/toggle-group"
 import dataChart from "@/dashboard.json";
+import axios from "axios"
+import { BACKEND_URL } from "@/config"
 
 export const description = "An interactive area chart"
 
@@ -66,11 +68,21 @@ export function ChartAreaInteractive() {
     if (isMobile) {
       setTimeRange("7d")
     }
+    let url = BACKEND_URL+ "dashboardChart";
+    console.log(url)
+
+    axios.get(url, {withCredentials:true}).then(
+      res => {
+        let data = res.data.value;
+        setCurrentData(data)
+      }
+    ).catch(error=> console.log(error))
+
   }, [isMobile])
 
-  const filteredData = chartData.filter((item) => {
+  const filteredData = currentData.filter((item) => {
     const date = new Date(item.date)
-    const referenceDate = new Date("2024-06-30") // in case my date the reference date is current date -- this is referring to fix date due to fixed nature of data.
+    const referenceDate = new Date() // in case my date the reference date is current date -- this is referring to fix date due to fixed nature of data.
     let daysToSubtract = 90;
     if (timeRange === "30d") {
       daysToSubtract = 30
@@ -84,10 +96,10 @@ export function ChartAreaInteractive() {
 
     const total = React.useMemo(
     () => ({
-      sales: chartData.reduce((acc, curr) => acc + curr.sales, 0),
-      orders: chartData.reduce((acc, curr) => acc + curr.orders, 0),
+      sales: currentData.reduce((acc, curr) => acc + curr.sales!, 0),
+      orders: currentData.reduce((acc, curr) => acc + curr.orders!, 0),
     }),
-    []
+    [currentData]
   )
 
   return (

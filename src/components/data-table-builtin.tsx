@@ -75,6 +75,7 @@ import { Input } from "./ui/input"
 
 export function DataTable() {
   const [preorderList, setPreorderList] = React.useState([{ title: "", description: "", imageURL: "", buttonURL: "", iconURL: "", bgTitleColor:"", bgBodyColor:"", preorderListDataId:"",list:[],id:"" }]);
+  const [categoryList, setCategoryList] = React.useState([{ title: "", description: "", imageURL: "", buttonURL: "", iconURL: "", bgTitleColor:"", bgBodyColor:"", preorderListDataId:"",list:[],id:"" }]);
   const [bannerList, setBannerList] = React.useState([{ title: "", text: "", buttonURL: "", imageURL: "", gradientColor: "" }]);
 
   const pendingDataRef = React.useRef<HTMLButtonElement>(null)
@@ -111,6 +112,7 @@ export function DataTable() {
         <TabsList className="**:data-[slot=badge]:bg-muted-foreground/30 **:data-[slot=badge]:size-5 **:data-[slot=badge]:rounded-full **:data-[slot=badge]:px-1 @4xl/main:flex">
           <TabsTrigger ref={itemRequirementRef} value="1">Banner List</TabsTrigger>
           <TabsTrigger ref={pendingDataRef} value="2">Pre-order List</TabsTrigger>
+          <TabsTrigger  value="3">Category List</TabsTrigger>
         </TabsList>
       </div>
       <TabsContent
@@ -166,6 +168,45 @@ export function DataTable() {
             <TableBody>
               {
                 preorderList.length > 1 ? preorderList.map((m, index) => {
+                  return <TableRow className="" key={ index}>
+                    <TableCell className="w-64 capitalize">
+                      <TableCellViewerList item={preorderList[index]} />
+                      </TableCell>
+                    <TableCell className="w-64">{m.description}</TableCell> 
+                     <TableCell className="w-32"><img width={75} height={75} src={m.imageURL || "#"} alt="item-image" /></TableCell>
+                     <TableCell className="w-32"><img width={50} height={50} src={m.iconURL || "#"} alt="item-image" /></TableCell>
+                    <TableCell className="w-64">{m.buttonURL}</TableCell>
+                    <TableCell className="w-64">{m.bgTitleColor}</TableCell>
+                    <TableCell className="w-64">{m.bgBodyColor}</TableCell>
+                  </TableRow>
+                }) : null
+              }
+            </TableBody>
+          </Table>
+        </div>
+        <div className="flex items-center justify-end px-4">
+        </div>
+      </TabsContent>
+        <div className="text-sm px-6">
+          Create new categories, delete old ones, modify, delete subcategories, make new subcategories
+        </div>
+        <TabsContent value="3" className="flex flex-col px-4 lg:px-6">
+       <div className="overflow-hidden rounded-lg border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead >Category Title</TableHead>
+                <TableHead >Description</TableHead>
+                <TableHead >Image URL</TableHead>
+                <TableHead >Button URL</TableHead>
+                <TableHead >Background Color</TableHead>
+                <TableHead >Subcategories</TableHead>
+                <TableHead >Active</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {
+                categoryList.length > 1 ? categoryList.map((m, index) => {
                   return <TableRow className="" key={ index}>
                     <TableCell className="w-64 capitalize">
                       <TableCellViewerList item={preorderList[index]} />
