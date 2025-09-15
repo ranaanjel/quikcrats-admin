@@ -1,7 +1,6 @@
-import { IconTrendingDown, IconTrendingUp } from "@tabler/icons-react"
 
 import { Badge } from "@/components/ui/badge"
-import { Check, IndianRupee, XIcon } from "lucide-react"
+import { Check, XIcon } from "lucide-react"
 import {
   Card,
   CardAction,
@@ -11,6 +10,8 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { useEffect, useState } from "react"
+import axios from "axios"
+import { BACKEND_URL } from "@/config"
 
 
 export function SectionCards() {
@@ -25,6 +26,27 @@ export function SectionCards() {
   }])
   useEffect(function () {
     // using the recoil here for the current data - fetching from backend -- atom
+    let url = BACKEND_URL!+ "priceCard"
+    axios.get(url,{withCredentials:true}).then(data=>{
+      let {totalItems} = data.data.value;
+
+      console.log(data.data.value)
+      
+      setCardList(prev => {
+      
+        prev[0].amount = totalItems.amount;
+        prev[0].inStock= totalItems.instock;
+        prev[0].outStock= totalItems.outstock;
+
+        let newValue = [...prev]
+        return newValue;
+      })
+      }).catch(err => {
+        console.log(err, "error occured")
+       
+
+    })
+
   }, [])
   return (
     <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
@@ -58,10 +80,3 @@ export function SectionCards() {
   )
 }
 
-function Trend({ value }: { value: string }) {
-  if (value == "up") {
-    return <IconTrendingUp className="size-4" />
-  } else {
-    return <IconTrendingDown className="size-4" />
-  }
-}

@@ -1,6 +1,5 @@
 import * as React from "react"
 
-import { z } from "zod"
 import { Button } from "@/components/ui/button"
 
 import { Label } from "@/components/ui/label"
@@ -60,39 +59,111 @@ import { Input } from "./ui/input"
 import { Trash2Icon } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
 import { Checkbox } from "./ui/checkbox"
+import { Badge } from "./ui/badge"
+import axios from "axios"
+import { BACKEND_URL } from "@/config"
+import { toast, Toaster } from "sonner"
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog"
 
 
 
 export function DataTable() {
-  const [category, setCategory] = React.useState([{name:"low",value:10, default:false},{name:"medium", default:true, value:50}, {default:false,name:"high", value:12}]);
+  const [category, setCategory] = React.useState<{name:string,value:number, default:boolean, id?:string}[]>([{name:"low",value:1, default:false},{name:"medium", default:true, value:1}, {default:false,name:"high", value:1}]);
   const allData = itemPricingOrder;
-  const [defaultCategory, setDefaultCategory]  = React.useState("medium");
-  const dataChange = React.useRef<Record<string,{
-    item: string,
-    category: string,
-    mrp: string,
-    discountPrice: string
-  }>>({})
-  const pendingDataRef = React.useRef<HTMLButtonElement>(null)
-  const itemRequirementRef = React.useRef<HTMLButtonElement >(null)
+  let categoryPricingId = React.useRef<Record<string, string>>({})
 
-  const [itemData, setItemData] = React.useState(allData);
+  const [defaultCategory, _]  = React.useState("all");
+
+  const dataChange = React.useRef<Record<string,{
+    itemName: string,
+    categoryPricing: string,
+    price: string,
+    discountPrice: string,
+    id:string
+  }>>({})
+  
+  const inputRef = React.useRef<HTMLInputElement>(null)
+
+
+  const [itemData, setItemData] = React.useState<{itemName:string, price:number, discountPrice:number, categoryPricing:string,id:string}[]>([]);
+  const [filterData, setFilterData] = React.useState<{itemName:string, price:number, discountPrice:number, categoryPricing:string,id:string}[]>([])
+
   const [enableEdit, setEnableEdit] = React.useState(false)
   const [saveValue, setSaveValue] = React.useState(true);
+
+  const [inputValue, setInputValue] = React.useState("");
+
   const editCheckRef = React.useRef<HTMLButtonElement>(null)
-  const allInputRef = React.useRef<HTMLInputElement[]>([])
+  const allInputPriceRef = React.useRef<HTMLInputElement[]>([])
+  const allInputDiscountRef = React.useRef<HTMLInputElement[]>([])
 
   function filterValue(value:string) {
+    console.log(defaultCategory, value)
     if(value == "all") {
-      setItemData(allData)
+      setFilterData(itemData)
     }else {
-      setItemData(allData.filter(m => m.category == value))
+      let newData  = itemData.filter(m => categoryPricingId.current[m.categoryPricing] == value)
+      console.log(newData, categoryPricingId.current)
+      setFilterData(newData)
     }
   }
 
   React.useEffect(function () {
     filterValue(defaultCategory)
+    let url = BACKEND_URL + "priceData";
+    axios.get(url, {withCredentials:true}).then(m =>{
+
+      let data = m.data;
+      let categoryList = data.categoryPricingList;
+      let userCategoryValue = data.categorizingUser;
+      let priceList = data.priceList;
+
+      setCategory(() => {
+        let newData = [];
+        categoryList.forEach((m:{name:string, default:boolean, id:string})=>{
+
+          categoryPricingId.current[m.id] = m.name;
+
+          newData.push({
+            name:m.name,value:userCategoryValue[m.name]??0, default:m.default,id:m.id
+          })
+        })
+
+
+        newData.push({name:"no-category", default:false, value:userCategoryValue["no-category"],id:""})
+        return newData;
+      })
+      setItemData(priceList);
+      setFilterData(priceList);
+    })
+
   },[])
+
+  function deleteCategoryPricing(id:string) {
+    toast.error("can't delete the category pricing once created, in v1")
+  }
+
+  function createCategoryPricing(name:string) {
+    if(name.trim() == "") {
+      toast.error("please name can't be empty")
+      return
+    }
+    let url = BACKEND_URL + "newCategoryPricing"+"/"+name.trim();
+    
+    axios.post(url, {}, {withCredentials:true}).then(value => {
+      let data = value.data;
+      if(data.success) {
+        toast.info(data.message + ' refreshing')
+        setTimeout(function() {
+          location.reload();
+        },500)
+      }else {
+        toast.error(data.message)
+      }
+    }).catch(err => {
+      console.log(err, "error")
+    })
+  }
 
 
   return (
@@ -106,9 +177,9 @@ export function DataTable() {
         </Label>
         
         <TabsList className="**:data-[slot=badge]:bg-muted-foreground/30   **:data-[slot=badge]:size-5 **:data-[slot=badge]:rounded-full **:data-[slot=badge]:px-1 @4xl/main:flex">
-          <TabsTrigger className="text-sm p-4" ref={itemRequirementRef} value="1">Pricing Category</TabsTrigger>
+          <TabsTrigger className="text-sm p-4"  value="1">Pricing Category</TabsTrigger>
 
-          <TabsTrigger className="text-sm p-4" ref={pendingDataRef} value="2">
+          <TabsTrigger className="text-sm p-4" value="2">
             Pricing Item
           </TabsTrigger>
         </TabsList>
@@ -117,7 +188,8 @@ export function DataTable() {
         value="1"
         className="relative flex gap-4 overflow-auto px-4 lg:px-6"
       >
-        <div className="overflow-hidden rounded-lg border">
+        <div className="overflow-hidden rounded-lg ">
+        <div className="text-xs mb-2"><Badge>default* medium is fixed</Badge></div>
           <Table className=" border ">
             <TableHeader className="">
               <TableRow className="">
@@ -131,14 +203,13 @@ export function DataTable() {
             </TableHeader>
             <TableBody>
                 
-                  {category.map(m => {
-
-                    return <TableRow key={m.name}>
-                      <TableCell className="p-4 w-78">{m.name}</TableCell>
-                      <TableCell className="p-4 w-78">{m.value}</TableCell>
-                      <TableCell className="p-4 w-12 " onClick={function () {
-                        alert("add functionality")
-                      }}><div className="bg-gray-800 hover:text-red-400 rounded p-2"><Trash2Icon className="size-4 "/></div></TableCell>
+                  {category.map((m, index) => {
+                    return <TableRow key={index}>
+                      <TableCell className="p-4 w-78 flex gap-4">{m.name} {m.default&&<Badge>default</Badge>}</TableCell>
+                      <TableCell className="p-4 w-78">{String(m.value) == "" ? 0 : m.value}</TableCell>
+                      <TableCell className="p-4 w-12 ">{m.name !== "no-category"&&<div className="bg-gray-800 hover:bg-gray-50 hover:text-red-400 rounded p-2" onClick={function() {
+                        deleteCategoryPricing(m.id as string)
+                      }}> <Trash2Icon className="size-4 "/></div>}</TableCell>
                       </TableRow>
                   })
                 }
@@ -148,13 +219,41 @@ export function DataTable() {
         <div className="flex items-start gap-4 px-4 flex-col justify-start">
                 <div className="flex flex-col gap-3">
                  <Label className="text-lg" htmlFor="target">Create New Category</Label>
-                 <Input id="target"  />
+                 <Input onClick={function(){
+                  
+    toast.info("carefully create once created can't delete, in v1")
+                 }} onChange={function(e){
+                  let value = e.target.value;
+                  setInputValue(value)
+                 }} ref={inputRef} id="target" />
                </div>
-               <Button onClick={function () {
-                alert("add functionality")
-               }}>create</Button>
+               
+                 <Dialog>
+      <form>
+        <DialogTrigger asChild>
+         <Button>create</Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Confirm Creation of Category?</DialogTitle>
+          </DialogHeader>
+          <DialogDescription>
+            {inputValue.trim() !== "" ? <span className="underline">{inputRef.current?.value as string}</span>: "no value is given"} is the value for category pricing.
+          </DialogDescription>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Cancel</Button>
+            </DialogClose>
+            <Button onClick={function () {
+                createCategoryPricing(inputRef.current?.value as string)
+               }} type="button">Confirm Create</Button>
+          </DialogFooter>
+        </DialogContent>
+      </form>
+    </Dialog>
 
       </div>
+      
          
       </TabsContent>
       <TabsContent
@@ -171,8 +270,12 @@ export function DataTable() {
                  <SelectContent>
                    <SelectItem value="all">all</SelectItem>
                   {
-                    category.map(m => {
-                      return <SelectItem value={m.name}>{m.name}</SelectItem>
+                    category.map((m,index) => {
+                      if(m.name == "no-category") {
+                        return;
+                      }
+
+                      return <SelectItem key={index} value={m.name}>{m.name}</SelectItem>
                     })
                   }
                  </SelectContent>
@@ -193,13 +296,25 @@ export function DataTable() {
               Edit
             </div>
             {
-              enableEdit && <Button onClick={function () {
+              enableEdit && <Button onClick={async function () {
                 setSaveValue(true)
                 setEnableEdit(false)
                 
                 // pushing to the database the data -- changes
                 //TODO
-                console.log(dataChange.current)
+                let url = BACKEND_URL+"priceChange"
+                axios.put(url,{data:dataChange.current},{withCredentials:true}).then(m=>{
+                  let data = m.data;
+
+                  if(data.success) {
+
+                    toast.info(data.message)
+                  }else {
+                    toast.error("try again not updated"+ " "+data.message);
+                    window.location.reload();
+                  }
+                  
+                })
 
                 // clearing the current context for further value.
                 dataChange.current = {}
@@ -225,35 +340,41 @@ export function DataTable() {
             </TableHeader>
             <TableBody>
                 {
-                  itemData.map((m,index) => {
-                    return <TableRow className="" key={m.id}>
-                      <TableCell className="w-78 p-4 pb-2">{m["item"]}</TableCell>
-                      <TableCell className="w-64 p-4 pb-2">{m["category"]}</TableCell>
+                 filterData.length > 0 &&  filterData.map((m,index) => {
+
+
+
+
+                    return <TableRow className="" key={index}>
+                      <TableCell className="w-78 p-4 pb-2">{m.itemName}</TableCell>
+                      <TableCell className="w-64 p-4 pb-2">{m.categoryPricing}</TableCell>
                       <TableCell className="w-64 p-4 pb-2">
                         <input ref={function (ref) {
                           if(!ref) return;
-                          allInputRef.current[index] = ref
+                          allInputPriceRef.current[index] = ref
                         }}  onChange={function (eobj) {
-                          dataChange.current[m["item"]]= {
-                            item: m["item"],
-                            category: m["category"],
-                            mrp: eobj.target.value,
-                            discountPrice: allInputRef.current[index].value,
+                          dataChange.current[m.itemName]= {
+                            itemName: m.itemName,
+                            categoryPricing: m.categoryPricing,
+                            price: eobj.target.value,
+                            discountPrice: allInputDiscountRef.current[index].value,
+                            id:m.id
                           }
-                        }} className="focus:outline-none" type="text" disabled={!enableEdit} defaultValue={m["mrp"]}/>
+                        }} className="focus:outline-none" type="text" disabled={!enableEdit} defaultValue={m.price}/>
                         </TableCell>
                       <TableCell className="w-64 p-4 pb-2">
                         <input ref={function (ref) {
                           if(!ref) return;
-                          allInputRef.current[index] = ref
+                          allInputDiscountRef.current[index] = ref
                         }} onChange={function (eobj) {
-                          dataChange.current[m["item"]]= {
-                            item: m["item"],
-                            category: m["category"],
-                            mrp: allInputRef.current[index].value,
+                          dataChange.current[m.itemName]= {
+                            itemName: m.itemName,
+                            categoryPricing: m.categoryPricing,
+                            price: allInputPriceRef.current[index].value,
                             discountPrice: eobj.target.value,
+                            id:m.id
                           }
-                        }} className="focus:outline-none" type="text" disabled={!enableEdit} defaultValue={m["discountPrice"]}/>
+                        }} className="focus:outline-none" type="text" disabled={!enableEdit} defaultValue={m.discountPrice}/>
                         </TableCell>
                       </TableRow>
                   })
@@ -264,6 +385,8 @@ export function DataTable() {
         <div className="flex items-center justify-end px-4">
       </div>
       </TabsContent>
+      <Toaster></Toaster>
     </Tabs>
+   
   )
 }
