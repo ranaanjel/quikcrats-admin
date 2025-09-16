@@ -506,9 +506,12 @@ function IndividualCreate() {
               <Button onClick={function () {
                 // sending the request to the backend
                 let data = brandRef.current?.value;
-
+                if(data?.trim() == "") {
+                  toast.error("can't be empty name");
+                  return;
+                }
                 let url = BACKEND_URL + "createBrand";
-                axios.post(url, { data }, { withCredentials: true }).then(n => {
+                axios.post(url, { data:data?.trim() }, { withCredentials: true }).then(n => {
                   
                   let value = n.data;
 
@@ -865,7 +868,7 @@ function BulkCreate() {
   let [brandList, setBrandList] = React.useState<string[]>([]);
   let [categoryList, setCategoryList] = React.useState<Record<string, string>[]>([{}]);
   let [subCategoryList, setSubCategoryList] = React.useState<Record<string, string[]>>({});
-  let [filterSub, setFilterSub] = React.useState<string[]>([]);
+  let [_, setFilterSub] = React.useState<string[]>([]);
   let [unitList, setUnitList] = React.useState<string[]>([]);
   let [sumbitFinalData, setSubmitFinalData] = React.useState<boolean>(false)
   let [finalData, setFinalData] = React.useState<{
@@ -912,6 +915,7 @@ function BulkCreate() {
     "subcategorylist": {}
   })
   let fileRef = React.useRef<HTMLInputElement>(null)
+  let [uploading, setUploading] = React.useState(false);
 
   React.useEffect(function () {
     let url = BACKEND_URL! + "all";
@@ -921,7 +925,6 @@ function BulkCreate() {
       setBrandList(brand)
       setCategoryList(category)
       setSubCategoryList(subCategory)
-      console.log(unit, brand, category, subCategory)
       setFilterSub(subCategory)
     }).catch(err => console.log(err))
 
@@ -929,19 +932,19 @@ function BulkCreate() {
 
   let checkData = React.useCallback(async function (data: string[][]): Promise<boolean> {
     let schema = z.object({
-      name: z.string().min(2, { message: "please make sure the value has at least 2 characters" }),
-      imageURL: z.string().min(5, { message: "please make sure the value has at least 5 characters" }),
+      name: z.string().min(2, { message: "please make sure the name value has at least 2 characters" }),
+      imageURL: z.string().min(5, { message: "please make sure the imageurl value has at least 5 characters" }),
       buttonURL: z.string(),
-      disclaimer: z.string().min(10, { message: "please make sure the value has at least 10 characters" }),
-      brandId: z.enum(listRef.current["brandlist"], { error: "make the data is in the list " }),
+      disclaimer: z.string().min(10, { message: "please make sure the disclaimer value has at least 10 characters" }),
+      brandId: z.enum(listRef.current["brandlist"], { error: "make the brandId data is in the list " }),
       categoryId: z.enum(listRef.current["categorylist"], { message: "please make sure the category in the database" }),
       subCategoryId: z.enum(listRef.current["subcategorylist"], { message: "please make sure the subcategory in the database" }),
       productInfoId: z.object({
         itemName: z.string(),
         category: z.string(),
-        shellLife: z.string().min(5, { message: "please make sure the value has at least 5 characters" }),
-        storageTemperature: z.string().min(5, { message: "please make sure the value has at least 5 characters" }),
-        container: z.string().min(5, { message: "please make sure the value has at least 5 characters" })
+        shellLife: z.string().min(5, { message: "please make sure the shelllife value has at least 5 characters" }),
+        storageTemperature: z.string().min(5, { message: "please make sure the storageTemperature value has at least 5 characters" }),
+        container: z.string().min(5, { message: "please make sure the container value has at least 5 characters" })
       }),
       quantity: z.number({ error: "make sure the quantity is number" }),
       primarySize: z.number({ error: "make sure the primary size is number" }),
@@ -956,7 +959,7 @@ function BulkCreate() {
       outOfStock: z.boolean({ error: "select the value in out of stock" }),
       comingSoon: z.boolean({ error: "select the value in coming soon" }),
       maxOrder: z.number({ error: "make sure the max order is number" }),
-      regExp: z.string().min(5, { message: "please make sure the value has at least 5 characters" }),
+      regExp: z.string().min(2, { message: "please make sure the value has at least 2 characters" }),
       unitInHouse: z.number().default(1)
     });
 
@@ -1054,7 +1057,7 @@ function BulkCreate() {
           outOfStock: (eachRow[13]) == "FALSE" ? false : true,
           comingSoon: false,
           maxOrder: 100,
-          regExp: eachRow[12]!,
+          regExp: eachRow[12],
           unitInHouse: 1
         }
       } else if (eachRow.length == 17) {
@@ -1091,14 +1094,13 @@ function BulkCreate() {
         }
       }
 
-      console.log(eachRow[9], objecIdRef.current["unitlist"][eachRow[9]])
-
       let check = schema.safeParse(createState);
       if (check.success) {
         newData.push(createState);
       }
       else {
         for (var error of (check.error.issues.slice(0, 3))) {
+          console.log(createState.name, createState,eachRow[2], objecIdRef.current["brandlist"])
           toast.error("Error has been occurred", {
             description: error.message + "  product name : " + createState.name,
           })
@@ -1269,25 +1271,32 @@ function BulkCreate() {
     </div>
     <div className="flex justify-center items-center p-4">
       <div className="flex gap-4 w-1/2">
-        <div className="w-1/2">Import Data only <code>.csv</code> files </div>
+        <div className="w-1/2">Import Data only <code>.csv</code> files, separator is <code>;</code> </div>
         <Input ref={fileRef} accept=".csv" type="file"></Input>
         <Button type="submit" onClick={async function () {
           let fileList = fileRef.current?.files;
 
-          console.log(fileList)
+        
           if (fileList?.length == 0 || fileList == undefined) {
             toast.error("no file is selected")
             return;
           }
 
-          console.log("data")
+   
 
           let data = await fileList[0].text();
           let formattedData = data.split("\n").filter(m => m);
-          let tableHeader = formattedData[0].split(",");
-          let tableRow = formattedData.slice(1,).map(m => m.split(",").filter(m => m).map(m => m.trim()))
+          // let tableHeader = formattedData[0].split(",,");
+          let tableRow = formattedData.slice(1,).map(m => m.split(";").filter(m => {
+            
+            if(m == "0") {
+              return false;
+            }
+            
+            return m}).map(m => m.trim()))
           //first check i.e either 14 and 17 values
 
+          console.log(tableRow)
           let lengthFilter = tableRow.filter(m => {
 
             let length = m.length;
@@ -1331,11 +1340,12 @@ function BulkCreate() {
       <DialogContent className="">
         <DialogHeader>
           <DialogTitle>List of items</DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="flex">
             all the items will go database, in case of duplicates item, the item will not going to get registered.
+            <Badge className="bg-blue-800 text-white">items {finalData.length} </Badge>
           </DialogDescription>
         </DialogHeader>
-        <div className=" min-h-[80vh] overflow-scroll border border-white/20 rounded px-2">
+        <div className=" max-h-[80vh] h-[80vh] overflow-scroll border border-white/20 rounded px-2">
           <Accordion
             type="single"
             collapsible
@@ -1349,6 +1359,7 @@ function BulkCreate() {
                 return <AccordionItem value={String(key + 1)} key={key}>
                   <AccordionTrigger>{m.name}</AccordionTrigger>
                   <AccordionContent className="flex flex-col gap-1   text-balance">
+                    
                     {
                       dataFinal.map(([key, value]) => {
 
@@ -1372,12 +1383,46 @@ function BulkCreate() {
           <DialogClose asChild>
             <Button variant="outline">Cancel</Button>
           </DialogClose>
-          <Button onClick={() => {
-            alert("add funtionality to database")
-            setSubmitFinalData(false)
+          <Button onClick={ async () => {
+            setUploading(true)
+            let url = BACKEND_URL + "bulk";
+
+              try{
+                for(var i = 0 ; i < finalData.length ; i+=20) {
+
+                let startValue = i;
+                let endValue = i+20;
+
+                let dataToSend = finalData.slice(startValue, endValue);
+                console.log(dataToSend)
+                let value =  (await axios.post(url, { data:dataToSend }, { withCredentials: true })).data;
+                  if (value.success) {
+                    toast.info(value.message) 
+                    toast.info(value.alreadyInDb.join(",  are in the databse already"))
+                  } else {
+                    toast.error(value.message)
+                  } 
+
+              } 
+              
+              setUploading(false)
+              }catch(err) {
+
+                setUploading(false)
+              }
+              setTimeout(function () {
+                      location.reload();
+                    }, 2000)
+              
+              setSubmitFinalData(false)
+
           }} type="submit">Confirm</Button>
         </DialogFooter>
+      {uploading&&<div className="bg-white/50 absolute h-full w-full top-0 left-0 flex flex-col text-gray-800  justify-center items-center">
+        <img src="https://ik.imagekit.io/auctvhqov/_loading-page__ZRwvOeWXM.gif?updatedAt=1755440325666" className="object-cover h-[200px] w-[200px]" alt="uploading"/>
+      </div>}
       </DialogContent>
+
     </Dialog>
     }
   </div>
@@ -1723,13 +1768,14 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
           <DialogViewer type="submit" value="Submit to database" brandId={brandValue} unitId={firstUnitValue} secondaryUnitId={secondaryUnitValue} itemId={item.id} changes={changes} onclickValue={function () {
 
           }}></DialogViewer>
-          <DialogViewer type="submit" value="Delete item in database" changes={dataChange.current} onclickValue={function () {
-            toast.error("Not allowed in v1")
-          }}></DialogViewer>
+          <Button variant={"destructive"} type="submit" onClick={function () {
+            toast.error("Not allowed in v1, instaed make it out of stock")
+          }}>Delete</Button>
           <DrawerClose asChild>
             <Button variant="outline">Done</Button>
           </DrawerClose>
         </DrawerFooter>
+        <Toaster></Toaster>
       </DrawerContent>
     </Drawer>
   )
@@ -2020,9 +2066,12 @@ function DialogViewer({ type, value, changes, onclickValue, setValue, disableTru
               <Button onClick={function () {
 
                 let data = brandRef.current?.value;
-
+                if(data?.trim() == "") {
+                  toast.error("empty string error")
+                  return;
+                }
                 let url = BACKEND_URL + "createBrand";
-                axios.post(url, { data }, { withCredentials: true }).then(n => {
+                axios.post(url, { data:data?.trim() }, { withCredentials: true }).then(n => {
                   let value = n.data;
                   if (value.success) {
                     toast.info(value.message)
