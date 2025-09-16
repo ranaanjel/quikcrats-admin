@@ -44,6 +44,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Checkbox } from "./ui/checkbox"
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog"
 import { Input } from "./ui/input"
+import { toast, Toaster } from "sonner"
+import axios from "axios"
 
 //  deliveryStatus: { // by the admin
 //       type: String,
@@ -309,6 +311,7 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
 
   let itemList = item.itemList.items;
 
+  const [deliveryStatus, setDeliveryStatus] = React.useState(deliveryStatusInterface.OrderReceived as string)
 
   let userInfo = {
     address,contactValue, pincode, restaurant: item.restaurantName, totalValue, saving, orderDeliveryDate, instruction, orderId: item.orderId
@@ -413,8 +416,8 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
             </div>
             <div className="flex flex-col gap-3">
               <div className="text-xl">Delivery Status</div>
-              <Select disabled={savedValue} onValueChange={function (value) {
-
+              <Select defaultValue={item.deliveryStatus} disabled={savedValue} onValueChange={function (value) {
+               setDeliveryStatus(value)
               }}>
                 <SelectTrigger>
                   <SelectValue placeholder="select the delivery status and submit" />
@@ -452,11 +455,27 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
           </div>
         </div>
         <DrawerFooter>
-          <DialogViewer type="submit" value="Submit to database" changes={dataChange.current} onclickValue={function () { }}></DialogViewer>
+          <DialogViewer type="submit" value="Submit to database" changes={dataChange.current} onclickValue={function () { 
+             let url = BACKEND_URL + "deliveryStatus";
+             
+                axios.put(url, { status:deliveryStatus,id:item.orderId   }, { withCredentials: true }).then(n => {
+                  let value = n.data;
+
+                  if (value.success) {
+                    toast.info(value.message)
+                    setTimeout(function () {
+                      location.reload();
+                    }, 700)
+                  } else {
+                    toast.error(value.message)
+                  }
+                })
+          }}></DialogViewer>
           <DrawerClose asChild>
             <Button variant="outline">Done</Button>
           </DrawerClose>
         </DrawerFooter>
+      <Toaster></Toaster>
       </DrawerContent>
     </Drawer>
   )
@@ -466,6 +485,7 @@ function ItemList({ userInfo, list, all }: { userInfo: Record<string, any>, all:
   let [checkState, setCheckState] = React.useState<boolean[]>(Array(list.length).fill(false))
   let [filterList, setFilterList] = React.useState<{ itemId: string, quant: number, unit: string, price: number[] }[]>(list);
   let [print, setPrint] = React.useState(false);
+  let [stateNA, setStateNA] = React.useState("")
 
   function printBill() {
     setFilterList(() => {
@@ -531,12 +551,29 @@ function ItemList({ userInfo, list, all }: { userInfo: Record<string, any>, all:
       all && <>              <div>
         in case of items not available, uncheck the items not present and press send below button
       </div>
-        <Button variant={"destructive"}>Send N/A items</Button>
+        <Button onClick={function() {
+           let newData = list.filter((_, index) => {
+        return !checkState[index]
+
+      })
+
+      if(newData.length == 0) {
+        toast.error("all the items are checked")
+        return;
+      }
+
+      let message = "These following items are not available %0a\n";
+      for (var item of newData) {
+        message += item.itemId + " " + item.quant + item.unit + "%0a\n"
+      }
+      message += "restaurant name : " +userInfo.restaurant+  " zone : "+ userInfo.pincode;
+      setStateNA(message)
+        }} variant={"destructive"}> <a onClick={function(){
+          setTimeout(()=>setStateNA(""),1000)
+        }} href={"https://wa.me/8287470325?text="+stateNA} target="_blank" >Send N/A items</a></Button>
         <div>
           fixes above problem in v2 inventory management
         </div>
-
-
 
         </>
     }
@@ -794,12 +831,10 @@ function TableCellViewerZone({ item }: { item: Record<string, any> }) {
   const [edit, setEdit] = React.useState(false);
   const classInputValue = "focus:outline-none focus:border underline"
   const editCheckRef = React.useRef<HTMLButtonElement>(null);
-  const dataChange = React.useRef<Record<string, any>>({});
+  const [dataChange, setDataChange] = React.useState<Record<string, any>>({area:item.area,pincode:item.pincode});
 
   return (
     <Drawer onClose={function () {
-      dataChange.current = {};
-      // not pushing the data 
     }} direction={isMobile ? "bottom" : "right"} >
       <DrawerTrigger asChild>
         <Button variant="link" className="capitalize text-foreground w-fit px-0 text-left">
@@ -827,13 +862,6 @@ function TableCellViewerZone({ item }: { item: Record<string, any> }) {
                 edit && <Button onClick={function () {
                   setSaved(true)
                   setEdit(false)
-
-                  // pushing to the database the data -- changes
-                  //TODO
-                  console.log(dataChange.current)
-
-                  // clearing the current context for further value.
-                  dataChange.current = {}
                 }} className="mx-2" variant={"default"} size={"sm"}>
                   save
                 </Button>
@@ -849,7 +877,13 @@ function TableCellViewerZone({ item }: { item: Record<string, any> }) {
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-3">
               <div className="text-xl">Address</div>
-              <input className={classInputValue} disabled={savedValue} defaultValue={item?.["area"]} />
+              <input className={classInputValue} disabled={savedValue} onChange={function(e) {
+                let value = e.target.value;
+                setDataChange(prev => {
+
+                  return {...prev, area:value}
+                })
+              }} defaultValue={item?.["area"]} />
             </div>
             <div className="flex flex-col gap-3">
               <div className="text-xl">General Category Pricing</div>
@@ -858,9 +892,41 @@ function TableCellViewerZone({ item }: { item: Record<string, any> }) {
           </div>
         </div>
         <DrawerFooter>
-          <DialogViewer type="zone" value="Create New Zone" changes={dataChange.current} onclickValue={function () { }}></DialogViewer>
+          <DialogViewer type="zone" value="Create New Zone" onclickValue={function () { 
+          }}></DialogViewer>
+          <Button className="cursor-pointer" onClick={function() {
+            let url = BACKEND_URL + "deliveryZone"+"/"+item.pincode;
+                axios.delete(url, { withCredentials: true }).then(n => {
+                  let value = n.data;
+                  if (value.success) {
+                    toast.info(value.message)
+                    setTimeout(function () {
+                      location.reload();
+                    }, 700)
+                  } else {
+                    toast.error(value.message)
+                  }
+                })
+          }} variant={"destructive"}>Delete</Button>
+
           <DrawerClose asChild>
-            <Button variant="outline">Done</Button>
+            <Button onClick={function() {
+
+            // console.log(dataChange)
+
+            let url = BACKEND_URL + "deliveryZone";
+                axios.put(url, {...dataChange}, { withCredentials: true }).then(n => {
+                  let value = n.data;
+                  if (value.success) {
+                    toast.info(value.message)
+                    setTimeout(function () {
+                      location.reload();
+                    }, 700)
+                  } else {
+                    toast.error(value.message)
+                  }
+                })
+            }} variant="outline">Done</Button>
           </DrawerClose>
         </DrawerFooter>
       </DrawerContent>
@@ -1132,7 +1198,26 @@ function DialogViewer({ type, value, changes, onclickValue, setValue, disableTru
                 <Input className="w-1/2" ref={areaRef} placeholder={"enter area name"}></Input>
               </div>
               <Button onClick={function () {
-                if (setValue) setValue(brandRef.current?.value);
+
+                if((pincodeRef.current?.value as string).length != 6 || (areaRef.current?.value as string).length <2 || isNaN(Number(pincodeRef.current?.value))) {
+
+                  toast.error("make sure pincode is 6 character long digit and address is at least two character")
+                  return;
+                }
+
+                let url = BACKEND_URL + "deliveryZone";
+                axios.post(url, {pincode:pincodeRef.current?.value, area:areaRef.current?.value}, { withCredentials: true }).then(n => {
+                  let value = n.data;
+                  if (value.success) {
+                    toast.info(value.message)
+                    setTimeout(function () {
+                      location.reload();
+                    }, 700)
+                  } else {
+                    toast.error(value.message)
+                  }
+                })
+               
                 setOpen(false)
               }}>create</Button>
             </div>
@@ -1145,6 +1230,7 @@ function DialogViewer({ type, value, changes, onclickValue, setValue, disableTru
             <Button variant="outline">Cancel</Button>
           </DialogClose>
         </DialogFooter>
+        <Toaster></Toaster>
       </DialogContent>
     </Dialog>
 

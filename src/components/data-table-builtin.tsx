@@ -67,15 +67,17 @@ export const itemRequiredSchema = z.object({
 
 import { IconPlus } from "@tabler/icons-react"
 import { BACKEND_URL } from "@/config"
-import { Trash } from "lucide-react"
+import { Plus, Trash, Trash2Icon } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
 import { Checkbox } from "./ui/checkbox"
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog"
 import { Input } from "./ui/input"
+import { toast, Toaster } from "sonner"
+import axios from "axios"
 
 export function DataTable() {
-  const [preorderList, setPreorderList] = React.useState([{ title: "", description: "", imageURL: "", buttonURL: "", iconURL: "", bgTitleColor:"", bgBodyColor:"", preorderListDataId:"",list:[],id:"" }]);
-  const [categoryList, setCategoryLit] = React.useState([{ title: "", description: "", imageURL: "", buttonURL: "", iconURL: "", bgTitleColor:"", bgBodyColor:"", preorderListDataId:"",list:[],id:"" }]);
+  const [preorderList, setPreorderList] = React.useState([{ title: "", description: "", imageURL: "", buttonURL: "", iconURL: "", bgTitleColor: "", bgBodyColor: "", preorderListDataId: "", list: [], id: "" }]);
+  const [categoryList, setCategoryList] = React.useState<{ name: string, shortDescription: string, imageURL: string, buttonURL: string, bgColor: string, subCategoryList: Record<string, any>[], id: string, active: boolean }[]>([{ name: "", shortDescription: "", imageURL: "", buttonURL: "", bgColor: "", subCategoryList: [], id: "", active: true }]);
   const [bannerList, setBannerList] = React.useState([{ title: "", text: "", buttonURL: "", imageURL: "", gradientColor: "" }]);
 
   const pendingDataRef = React.useRef<HTMLButtonElement>(null)
@@ -85,16 +87,24 @@ export function DataTable() {
 
   React.useEffect(function () {
     // getting all the items from the backend 
-    fetch(BACKEND_URL + "adsbanner",{credentials:"include"}).then(async (m) => {
+    fetch(BACKEND_URL + "adsbanner", { credentials: "include" }).then(async (m) => {
       let data = await m.json()
       setBannerList(data.banner)
       // keeping this data in the react.useMemo for lifecycle of component.
     }).catch(err => console.log(err))
-    fetch(BACKEND_URL + "defaultpreorder",{credentials:"include"}).then(async (m) => {
+    fetch(BACKEND_URL + "defaultpreorder", { credentials: "include" }).then(async (m) => {
       let data = await m.json()
       setPreorderList(data.defaultValue)
       // keeping this data in the react.useMemo for lifecycle of component.
-    }).catch(err => console.log(err)) 
+    }).catch(err => console.log(err))
+    fetch(BACKEND_URL + "categoryInfo", { credentials: "include" }).then(async (m) => {
+      let { activeCategories, upcomingCategories } = (await m.json())
+
+      setCategoryList(() => {
+        return [...activeCategories, ...upcomingCategories]
+      })
+      // keeping this data in the react.useMemo for lifecycle of component.
+    }).catch(err => console.log(err))
 
   }, [])
 
@@ -112,7 +122,7 @@ export function DataTable() {
         <TabsList className="**:data-[slot=badge]:bg-muted-foreground/30 **:data-[slot=badge]:size-5 **:data-[slot=badge]:rounded-full **:data-[slot=badge]:px-1 @4xl/main:flex">
           <TabsTrigger ref={itemRequirementRef} value="1">Banner List</TabsTrigger>
           <TabsTrigger ref={pendingDataRef} value="2">Pre-order List</TabsTrigger>
-          <TabsTrigger  value="3">Category List</TabsTrigger>
+          <TabsTrigger value="3">Category List</TabsTrigger>
         </TabsList>
       </div>
       <TabsContent
@@ -136,7 +146,7 @@ export function DataTable() {
                   return <TableRow className="" key={m.title + index}>
                     <TableCell className="w-64 capitalize">
                       <TableCellViewer item={bannerList[index]} />
-                      </TableCell>
+                    </TableCell>
                     <TableCell className="w-64">{m.text}</TableCell>
                     <TableCell className="w-64">{m.buttonURL}</TableCell>
                     <TableCell className="w-32"><img width={75} height={75} src={m.imageURL} alt="item-image" /></TableCell>
@@ -152,7 +162,7 @@ export function DataTable() {
 
       </TabsContent>
       <TabsContent value="2" className="flex flex-col px-4 lg:px-6">
-       <div className="overflow-hidden rounded-lg border">
+        <div className="overflow-hidden rounded-lg border">
           <Table>
             <TableHeader>
               <TableRow>
@@ -168,13 +178,13 @@ export function DataTable() {
             <TableBody>
               {
                 preorderList.length > 1 ? preorderList.map((m, index) => {
-                  return <TableRow className="" key={ index}>
+                  return <TableRow className="" key={index}>
                     <TableCell className="w-64 capitalize">
                       <TableCellViewerList item={preorderList[index]} />
-                      </TableCell>
-                    <TableCell className="w-64">{m.description}</TableCell> 
-                     <TableCell className="w-32"><img width={75} height={75} src={m.imageURL || "#"} alt="item-image" /></TableCell>
-                     <TableCell className="w-32"><img width={50} height={50} src={m.iconURL || "#"} alt="item-image" /></TableCell>
+                    </TableCell>
+                    <TableCell className="w-64">{m.description}</TableCell>
+                    <TableCell className="w-32"><img width={75} height={75} src={m.imageURL || "#"} alt="item-image" /></TableCell>
+                    <TableCell className="w-32"><img width={50} height={50} src={m.iconURL || "#"} alt="item-image" /></TableCell>
                     <TableCell className="w-64">{m.buttonURL}</TableCell>
                     <TableCell className="w-64">{m.bgTitleColor}</TableCell>
                     <TableCell className="w-64">{m.bgBodyColor}</TableCell>
@@ -187,19 +197,17 @@ export function DataTable() {
         <div className="flex items-center justify-end px-4">
         </div>
       </TabsContent>
-        <div className="text-sm px-6">
+      <TabsContent value="3" className="flex flex-col px-4 lg:px-6">
+        <div className="text-sm my-2 px-2">
           Create new categories, delete old ones, modify, delete subcategories, make new subcategories
         </div>
-        <TabsContent value="3" className="flex flex-col px-4 lg:px-6">
-       <div className="overflow-hidden rounded-lg border">
+        <div className="overflow-hidden rounded-lg border">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead >Category Title</TableHead>
                 <TableHead >Description</TableHead>
                 <TableHead >Image URL</TableHead>
-                <TableHead >Button URL</TableHead>
-                <TableHead >Background Color</TableHead>
                 <TableHead >Subcategories</TableHead>
                 <TableHead >Active</TableHead>
               </TableRow>
@@ -207,16 +215,19 @@ export function DataTable() {
             <TableBody>
               {
                 categoryList.length > 1 ? categoryList.map((m, index) => {
-                  return <TableRow className="" key={ index}>
+                  return <TableRow className="" key={index}>
                     <TableCell className="w-64 capitalize">
-                      <TableCellViewerList item={preorderList[index]} />
-                      </TableCell>
-                    <TableCell className="w-64">{m.description}</TableCell> 
-                     <TableCell className="w-32"><img width={75} height={75} src={m.imageURL || "#"} alt="item-image" /></TableCell>
-                     <TableCell className="w-32"><img width={50} height={50} src={m.iconURL || "#"} alt="item-image" /></TableCell>
-                    <TableCell className="w-64">{m.buttonURL}</TableCell>
-                    <TableCell className="w-64">{m.bgTitleColor}</TableCell>
-                    <TableCell className="w-64">{m.bgBodyColor}</TableCell>
+                      {m.active ? <TableCellViewerCategory item={categoryList[index]} /> : m.name}
+                    </TableCell>
+                    <TableCell className="w-64">{m.shortDescription}</TableCell>
+                    <TableCell className="w-32"><img width={75} height={75} src={m.imageURL || "#"} alt="item-image" /></TableCell>
+                    <TableCell className="w-64 flex-col flex gap-2">{m.subCategoryList.length > 0 && m.subCategoryList.map((m, index) => {
+                      return <div className="" key={index}>
+                        <Badge>{m.name}</Badge>
+                        
+                      </div>
+                    })}</TableCell>
+                    <TableCell className="w-64">{m.active ? "active" : "inactive"}</TableCell>
                   </TableRow>
                 }) : null
               }
@@ -430,12 +441,12 @@ function TableCellViewerList({ item }: { item: Record<string, any> }) {
               <div className="text-xl">Items List</div>
               <div className="flex flex-col gap-2">
                 {
-                    item.list.length > 0 && item.list.map((m:{name:string,quant:number}) => {
+                  item.list.length > 0 && item.list.map((m: { name: string, quant: number }) => {
 
-                      return <span>
-                        {m.name} : {m.quant}
-                      </span>
-                    })
+                    return <span>
+                      {m.name} : {m.quant}
+                    </span>
+                  })
                 }
               </div>
             </div>
@@ -451,6 +462,360 @@ function TableCellViewerList({ item }: { item: Record<string, any> }) {
     </Drawer>
   )
 }
+function TableCellViewerCategory({ item }: { item: Record<string, any> }) {
+  const isMobile = useIsMobile();
+
+  interface CategoryValue {
+    name: string,
+    shortDescription: string,
+    buttonURL: string,
+    imageURL: string,
+    bgColor: string,
+    active: boolean,
+    subCategoryList: { name: string, categoryName: string, imageURL: string } | any[]
+  }
+
+  const [savedValue, setSaved] = React.useState(true);
+  const [edit, setEdit] = React.useState(false);
+  const classInputValue = "focus:outline-none focus:border underline"
+  const classInputInValue = "focus:outline-none focus:border border p-2 rounded"
+  const editCheckRef = React.useRef<HTMLButtonElement>(null);
+  const [dataChange, setDataChange] = React.useState<{ imageURL: string, bgColor: string }>({ imageURL: "", bgColor: "" });
+  const [createChange, setCreatChange] = React.useState<CategoryValue>({
+    name: "", shortDescription: '', buttonURL: "", imageURL: "", bgColor: "", active: false, subCategoryList:
+    {
+      name: "", categoryName: "", imageURL: ""
+    }
+  })
+  const [subCategoryCreate, setSubCategoryCreate] = React.useState<{
+    name: string, categoryName: string, imageURL: string
+  }>({
+    name: "", categoryName: item.name, imageURL: ""
+  })
+
+  return (
+    <Drawer onClose={function () {
+      // not pushing the data 
+    }} direction={isMobile ? "bottom" : "right"} >
+      <DrawerTrigger asChild>
+        <Button variant="link" className="capitalize text-foreground w-fit px-0 text-left">
+          {item.name}
+        </Button>
+      </DrawerTrigger>
+      <DrawerContent >
+        <DrawerHeader className="gap-1">
+          <DrawerTitle className="capitalize flex justify-between">{item.name}
+            <div className="flex gap-1 items-center">
+              <Checkbox checked={!savedValue} ref={editCheckRef} onCheckedChange={function (value) {
+                if (value) {
+                  alert("entering the edit mode")
+                  setEdit(true)
+                  setSaved(false)
+                } else if (value == false) {
+                  alert("make you save first")
+                  // setEnableEdit(false)
+                }
+              }}></Checkbox>
+              <div className="text-sm lowercase">
+                Edit
+              </div>
+              {
+                edit && <Button onClick={function () {
+                  setSaved(true)
+                  setEdit(false)
+                }} className="mx-2" variant={"default"} size={"sm"}>
+                  save
+                </Button>
+
+              }
+
+            </div>
+          </DrawerTitle>
+        </DrawerHeader>
+        <div className="flex flex-col gap-4 overflow-y-auto px-4 text-sm">
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-3">
+              <div className="text-xl">Title</div>
+              <input className={classInputValue} disabled={true} defaultValue={item?.["name"]} />
+            </div>
+            <div className="flex flex-col gap-3">
+              <div className="text-xl">Button URL</div>
+              <input className={classInputValue} disabled={true} defaultValue={item?.["buttonURL"]} />
+            </div>
+            <div className="flex flex-col gap-3">
+              <div className="flex gap-3 items-center">
+                <div className="text-xl">Description</div>
+                <input className={classInputValue} disabled={true} defaultValue={item?.["shortDescription"]} />
+              </div>
+            </div>
+            <div className="flex flex-col gap-3">
+              <div className="text-xl">Image URL</div>
+              <input className={classInputValue} disabled={savedValue} defaultValue={item?.["imageURL"]} onChange={function (e) {
+                let value = e.target.value;
+
+                setDataChange(prev => {
+                  return { ...prev, imageURL: value }
+                })
+              }} />
+            </div>
+            <div className="flex flex-col gap-3">
+              <div className="text-xl flex justify-between">Background Body Color
+                <input type="color" defaultValue={item?.bgColor.match(/#\w+/)[0]} onChange={function (e) {
+                  let value = e.target.value;
+                  setDataChange(prev => {
+                    return { ...prev, bgColor: "bg-linear-to-t via-[" + value + "] to-[#ffffff]" }
+                  })
+                }} />
+              </div>
+              <input className={classInputValue} disabled={true} value={dataChange.bgColor || item?.["bgColor"]} />
+            </div>
+            <div className="flex flex-col gap-3">
+              <div className="text-xl">Subcategory List</div>
+              <div className="flex flex-col gap-4">
+                {
+                  item.subCategoryList.length > 0 && item.subCategoryList.map((m: { name: string, imageURL: string }) => {
+                    return <div className="flex justify-between items-center ">
+                      <div className="flex gap-2 items-center">
+                        <img src={m.imageURL} alt={m.name} height={50} width={50} />
+                        <span>
+                          {m.name}
+                        </span>
+                      </div>
+                      <div onClick={function () {
+                        toast.error("in v2, upcoming features")
+                      }} className="bg-gray-600 flex justify-center rounded p-1 items-center hover:bg-gray-50 hover:text-red-600">
+
+                        <Trash2Icon className="size-4"></Trash2Icon>
+                      </div>
+                    </div>
+                  })
+                }
+                <Dialog >
+                  <DialogTrigger asChild>
+                    <Button>Create More subcategories<Plus></Plus></Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                      <DialogTitle>Create subcategories</DialogTitle>
+                      <DialogDescription>
+                      </DialogDescription>
+                    </DialogHeader>
+                    {/* {changes} */}
+                    <div className="flex flex-col gap-3">
+                      <div className="text-xl">Subcategory List</div>
+                      <div className="flex flex-col gap-1">
+                        <div className="text-xl">Name</div>
+                        <input className={classInputInValue} placeholder="subcategory name" onChange={function (e) {
+
+                          setSubCategoryCreate(prev => {
+                            let titleValue = e.target.value;
+                            return { ...prev, name: titleValue }
+                          })
+                        }} />
+                        <div className="text-xl">category name</div>
+                        <input className={classInputInValue} disabled={true} value={subCategoryCreate.categoryName} />
+                        <div className="text-xl">Image</div>
+                        <input className={classInputInValue} placeholder="subcategory imageURL" onChange={function (e) {
+                          setSubCategoryCreate(prev => {
+                            let titleValue = e.target.value;
+                            return { ...prev, imageURL: titleValue }
+                          })
+                        }} />
+                      </div>
+
+                    </div>
+                    <DialogFooter>
+                      <DialogClose asChild>
+                        <Button variant="outline">Cancel</Button>
+                      </DialogClose>
+                      <Button onClick={function () {
+                        if (subCategoryCreate.categoryName == "" || subCategoryCreate.name == "" || !subCategoryCreate.imageURL.startsWith("https://")) {
+                          toast.error("make sure the name and image url is there")
+                          return;
+                        }
+                        let url = BACKEND_URL + "subCategoryadd";
+                        axios.post(url, { data: subCategoryCreate }, { withCredentials: true }).then(n => {
+                          let value = n.data;
+                          if (value.success) {
+                            toast.info(value.message)
+                            setTimeout(function () {
+                              location.reload();
+                            }, 1000)
+                          } else {
+                            toast.error(value.message)
+                          }
+                        })
+                      }} type="submit">Confirm</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </div>
+          </div>
+        </div>
+        <DrawerFooter>
+          <Dialog >
+            <DialogTrigger asChild>
+              <Button>Create New Category<Plus></Plus></Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Create your category</DialogTitle>
+                <DialogDescription>
+                </DialogDescription>
+              </DialogHeader>
+              {/* {changes} */}
+              <div className="flex flex-col gap-4 overflow-y-auto px-4 text-sm">
+                <div className="flex flex-col gap-4">
+                  <div className="flex flex-col gap-3">
+                    <div className="text-xl">Name</div>
+                    <input className={classInputInValue} placeholder="category name" onChange={function (e) {
+                      setCreatChange(prev => {
+                        let titleValue = e.target.value;
+                        let buttonValue = titleValue.replace(/[^a-z\s]/g, "").replace(/\s+/g, "_")
+                        return { ...prev, name: titleValue, buttonURL: "/category/" + buttonValue, subCategoryList: { ...prev.subCategoryList, categoryName: titleValue } }
+                      })
+                    }} />
+                  </div>
+                  <div className="flex flex-col gap-3">
+                    <div className="text-xl">Button URL</div>
+                    <input className={classInputInValue} value={createChange.buttonURL || "/category/current_name"} disabled={true} defaultValue={"/category/current_name"} />
+                  </div>
+                  <div className="flex flex-col gap-3">
+                    <div className="text-xl">Description</div>
+                    <input className={classInputInValue} onChange={function (e) {
+                      setCreatChange(prev => {
+                        let value = e.target.value;
+                        return { ...prev, shortDescription: value }
+                      })
+                    }} placeholder="description about the category" />
+                  </div>
+                  <div className="flex flex-col gap-3">
+                    <div className="text-xl">Image URL</div>
+                    <input className={classInputInValue} onChange={function (e) {
+                      setCreatChange(prev => {
+                        let titleValue = e.target.value;
+                        return { ...prev, imageURL: titleValue }
+                      })
+                    }} placeholder="a hosted url" />
+                  </div>
+                  <div className="flex flex-col gap-3">
+                    <div className="text-xl">Background Body Color</div>
+                    <input className={classInputInValue} onChange={function (e) {
+                      setCreatChange(prev => {
+                        let titleValue = e.target.value;
+                        console.log(titleValue)
+                        return { ...prev, bgColor: "bg-linear-to-t via-[" + titleValue + "] to-[#ffffff]" }
+                      })
+                    }} type="color" />
+                  </div>
+                  <div className="flex flex-col gap-3">
+                    <div className="text-xl">Subcategory List</div>
+                    <div className="text-xs">Only one here, create more original method</div>
+                    <div className="flex flex-col gap-1">
+                      <div className="text-xl">Name</div>
+                      <input className={classInputInValue} placeholder="subcategory name" onChange={function (e) {
+                        setCreatChange(prev => {
+                          let titleValue = e.target.value;
+                          return { ...prev, subCategoryList: { ...prev.subCategoryList, name: titleValue } }
+                        })
+                      }} />
+                      <div className="text-xl">category name</div>
+                      <input className={classInputInValue} disabled={true} value={createChange.name} />
+                      <div className="text-xl">Image</div>
+                      <input className={classInputInValue} placeholder="subcategory imageURL" onChange={function (e) {
+                        setCreatChange(prev => {
+                          let titleValue = e.target.value;
+                          return { ...prev, subCategoryList: { ...prev.subCategoryList, imageURL: titleValue } }
+                        })
+                      }} />
+                    </div>
+
+                  </div>
+                  <div className="flex gap-3">
+                    <div className="text-lg flex gap-3">Select Active<Badge variant={"destructive"}>false* is default</Badge></div>
+                    <Select defaultValue="false" onValueChange={function (value) {
+                      setCreatChange(prev => {
+                        return { ...prev, active: value == "true" ? true : false }
+                      })
+                    }}>
+
+                      <SelectTrigger>
+                        <SelectValue placeholder="Choose active"></SelectValue>
+
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="true">true</SelectItem>
+                        <SelectItem value="false">false</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                </div>
+              </div>
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button variant="outline">Cancel</Button>
+                </DialogClose>
+                <Button onClick={function () {
+                  console.log(createChange)
+                  if (createChange.name == "" || createChange.bgColor == "" || createChange.shortDescription == "" || createChange.bgColor == "" || createChange.buttonURL == "" || ("name" in createChange.subCategoryList ? createChange.subCategoryList.name == "" : false) || ("name" in createChange.subCategoryList ? !createChange.subCategoryList.imageURL.startsWith("https://") : false) || !createChange.imageURL.startsWith("https://")) {
+                    toast.error("fill all the value even the color")
+                    return;
+                  }
+
+                  let url = BACKEND_URL + "categoryadd";
+                  axios.post(url, { data: createChange }, { withCredentials: true }).then(n => {
+                    let value = n.data;
+                    if (value.success) {
+                      toast.info(value.message)
+                      setTimeout(function () {
+                        location.reload();
+                      }, 1000)
+                    } else {
+                      toast.error(value.message)
+                    }
+                  })
+
+                }} type="submit">Confirm</Button>
+              </DialogFooter>
+            </DialogContent>
+
+          </Dialog>
+
+          <DialogViewer type="submit" value="Submit to database" changes={dataChange} onclickValue={function () {
+            if (dataChange.bgColor == "" || !dataChange.imageURL.startsWith("https://") ) {
+              toast.error("make sure to change the color and image url for any change to sent")
+              return;
+            }
+            console.log(dataChange)
+            let url = BACKEND_URL + "categoryModify";
+            axios.put(url, { data: {...dataChange, id:item.id} }, { withCredentials: true }).then(n => {
+              let value = n.data;
+              if (value.success) {
+                toast.info(value.message)
+                setTimeout(function () {
+                  location.reload();
+                }, 1000)
+              } else {
+                toast.error(value.message)
+              }
+            })
+            setDataChange(prev => {
+              return { imageURL: "", bgColor: "" }
+            })
+          }}></DialogViewer>
+          <DrawerClose asChild>
+            <Button variant="outline">Done</Button>
+          </DrawerClose>
+        </DrawerFooter>
+        <Toaster></Toaster>
+      </DrawerContent>
+    </Drawer>
+  )
+}
+
+
 
 function DialogViewer({ type, value, changes, onclickValue, setValue, disableTrue }: { type: "alert" | "confirm" | "offers" | "unit" | "submit" | "brand", value?: string, changes?: any, onclickValue?: () => void, setValue?: React.Dispatch<React.SetStateAction<any>>, disableTrue?: boolean }) {
 
@@ -470,14 +835,14 @@ function DialogViewer({ type, value, changes, onclickValue, setValue, disableTru
 
   React.useEffect(function () {
     if (type == "brand") {
-      fetch(BACKEND_URL! + "brand",{credentials:"include"}).then(async (m) => {
+      fetch(BACKEND_URL! + "brand", { credentials: "include" }).then(async (m) => {
         let data = await m.json()
         setBrandList(data.data)
         setFilterValue(data.data);
       }).catch(err => console.log(err))
     } else if (type == "unit") {
 
-      fetch(BACKEND_URL! + "unit",{credentials:"include"}).then(async (m) => {
+      fetch(BACKEND_URL! + "unit", { credentials: "include" }).then(async (m) => {
         let data = await m.json()
         setUnitList(data.data)
       }).catch(err => console.log(err))

@@ -72,6 +72,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Checkbox } from "./ui/checkbox"
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog"
 import { Input } from "./ui/input"
+import axios from "axios"
+import { toast, Toaster } from "sonner"
 
 export function DataTable() {
   const [customerList, setCustomerList] = React.useState([{ id: "", contact: { name: "", email: "", phoneNo: "" }, restaurantName: "", preferences: "", active: false, categoryPricing: { categoryName: "" , _id:""} }]);
@@ -157,7 +159,7 @@ export function DataTable() {
                   let name = ("name" in m.contact ? m.contact.name : "") + ", " + ("phoneNo" in m.contact ? m.contact.phoneNo : "") + ", " + ("email" in m.contact ? m.contact.email : "");
                   return <TableRow className="" key={index}>
                     <TableCell className="w-64 capitalize">
-                      <TableCellViewer item={customerList[index]} />
+                      <TableCellViewer item={filterCustomer[index]} />
                     </TableCell>
                     <TableCell className="w-64">{name}</TableCell>
                     <TableCell className="w-64">{m.preferences}</TableCell>
@@ -185,7 +187,9 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
   const [edit, setEdit] = React.useState(false);
   const classInputValue = "focus:outline-none focus:border underline"
   const editCheckRef = React.useRef<HTMLButtonElement>(null);
-  const dataChange = React.useRef<Record<string, any>>({});
+  const [dataChange, setDataChange] = React.useState<{
+    preferences:string, categoryPricing:string
+  }>({preferences:item.preferences, categoryPricing:item.categoryPricing._id})
   const [categoryPricingList, setCategoryPricingList] = React.useState([{id:"", categoryName:""}]);
 
   React.useEffect(function() {
@@ -199,7 +203,7 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
 
   return (
     <Drawer open={open} onClose={function () {
-      dataChange.current = {};
+
       // not pushing the data 
     }} direction={isMobile ? "bottom" : "right"} >
       <DrawerTrigger asChild>
@@ -230,12 +234,7 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
                 edit && <Button onClick={function () {
                   setSaved(true)
                   setEdit(false)
-                  // pushing to the database the data -- changes
-                  //TODO
-                  console.log(dataChange.current)
 
-                  // clearing the current context for further value.
-                  dataChange.current = {}
                 }} className="mx-2" variant={"default"} size={"sm"}>
                   save
                 </Button>
@@ -253,7 +252,10 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
               <div className="text-md">Preferences</div>
               <input className={classInputValue} disabled={savedValue} onChange={function (e) {
                 let data = e.target.value;
-                dataChange.current["preferences"] = data;
+               
+                setDataChange(prev => {
+                  return {...prev, preferences:data}
+                })
               }} defaultValue={item?.["preferences"]} />
             </div>
             <div className="flex flex-col gap-3">
@@ -262,7 +264,10 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
                 make sure the customer does not have a pending order
               </div>
                <Select disabled={savedValue} onValueChange={function (data) {
-                dataChange.current["categoryPricingId"] = data;
+                setDataChange(prev => {
+                  
+                  return {...prev, categoryPricing:data}
+                })
               }} defaultValue={ "categoryPricing" in item ? item.categoryPricing._id : ""}>
                 <SelectTrigger>
                   <SelectValue placeholder="Is it a supersaver?" />
@@ -277,9 +282,31 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
           </div>
         </div>
         <DrawerFooter>
-          <DialogViewer type="submit" value="Submit to database" changes={dataChange.current} onclickValue={function () {
-            console.log(dataChange.current)
-            setOpen(false)
+          <DialogViewer type="submit" value="Submit to database" onclickValue={function () {
+            
+              let dataToSend = {...dataChange, userId:item.id};
+              if(dataToSend.categoryPricing == "") {
+                dataToSend.categoryPricing = item.categoryPricing._id;
+
+              }else if(dataToSend.preferences == "") {
+                dataToSend.preferences = "Better rate, decent quality and timely delivered."
+              }
+                let url = BACKEND_URL + "customerCategory";
+                axios.put(url, { data:dataToSend }, { withCredentials: true }).then(n => {
+                  let value = n.data;
+
+                  if (value.success) {
+                    toast.info(value.message)
+                    setTimeout(function () {
+                      location.reload();
+                    }, 500)
+                  } else {
+                    toast.error(value.message)
+                  }
+                })
+            
+            
+            // setOpen(false)
            }}></DialogViewer>
           <DrawerClose asChild>
             <Button onClick={()=>{
@@ -347,6 +374,7 @@ function DialogViewer({ type, value, changes, onclickValue, setValue, disableTru
           </DialogClose>
           <Button onClick={onclickValue} type="submit">Confirm</Button>
         </DialogFooter>
+        <Toaster></Toaster>
       </DialogContent>
     </Dialog>
 
@@ -518,7 +546,7 @@ function DialogViewer({ type, value, changes, onclickValue, setValue, disableTru
                   //TODO db call
                   setOpen(false)
                   console.log(offers)
-                  setOffers(prev => {
+                  setOffers(() => {
                     return {
                       price: 0,
                       quantity: 0,

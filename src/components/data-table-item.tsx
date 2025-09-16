@@ -451,7 +451,6 @@ function IndividualCreate() {
           <SelectContent>
             {Object.values(categoryList).map((m, index) => {
               let [value] = Object.keys(m);
-              let [key] = Object.values(m);
 
               return <SelectItem key={index} value={value}>{value}</SelectItem>
             })}
@@ -464,11 +463,11 @@ function IndividualCreate() {
         }}> <SelectTrigger id="category" className="w-full"> <SelectValue placeholder="Select a sub category" />
           </SelectTrigger>
           <SelectContent>
-            {Object.values(filterSub).map((m, index) => {
+            {filterSub.length > 0 ? Object.values(filterSub).map((m, index) => {
               let [value] = Object.keys(m);
               let [key] = Object.values(m);
               return <SelectItem key={index} value={key}>{value}</SelectItem>
-            })}
+            }): <SelectItem value={"null"} > select the category first</SelectItem> }
           </SelectContent>
         </Select>
       </div>

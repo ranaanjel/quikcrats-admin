@@ -49,7 +49,6 @@ let [params, setParams] = useSearchParams()
   useEffect(function(){
     let data = JSON.parse(localStorage.getItem("data") as string || "{}");
 
-    console.log(data)
     let user = "";
     let email = "";
     if(JSON.stringify(data) == "{}") {

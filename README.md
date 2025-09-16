@@ -54,7 +54,7 @@ Tech Stack for MVP
 # V2
  
 - Optional: Sub-admin roles (e.g., stock manager vs. delivery person)
-
+- active categories and inactive categories shifting the switch - instead of deleting it.
 - Notifications / Alerts
     Payment due alerts
     New order placed
