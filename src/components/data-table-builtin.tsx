@@ -669,9 +669,20 @@ function TableCellViewerCategory({ item }: { item: Record<string, any> }) {
                 <div className="flex flex-col gap-4">
                   <div className="flex flex-col gap-3">
                     <div className="text-xl">Name</div>
-                    <input className={classInputInValue} placeholder="category name" onChange={function (e) {
+
+                    <input className={classInputInValue}  placeholder="category name : convention for writing the data is mention ask developer" onChange={function (e) {
                       setCreatChange(prev => {
                         let titleValue = e.target.value;
+
+                        // checking if there is the special character if not then ;
+
+                        if(!titleValue.match(/[^a-z\s]/g)) {
+
+                        let buttonValue = titleValue.replace(/\s+/g, "-")
+                        return { ...prev, name: titleValue, buttonURL: "/category/" + buttonValue, subCategoryList: { ...prev.subCategoryList, categoryName: titleValue } }
+                        }
+
+
                         let buttonValue = titleValue.replace(/[^a-z\s]/g, "").replace(/\s+/g, "_")
                         return { ...prev, name: titleValue, buttonURL: "/category/" + buttonValue, subCategoryList: { ...prev.subCategoryList, categoryName: titleValue } }
                       })
