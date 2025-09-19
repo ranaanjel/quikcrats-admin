@@ -64,7 +64,6 @@ export const itemRequiredSchema = z.object({
 
 // Create a separate component for the drag handle
 
-
 import { IconPlus } from "@tabler/icons-react"
 import { BACKEND_URL } from "@/config"
 import { Plus, Trash, Trash2Icon } from "lucide-react"
@@ -526,7 +525,6 @@ function TableCellViewerCategory({ item }: { item: Record<string, any> }) {
                 }} className="mx-2" variant={"default"} size={"sm"}>
                   save
                 </Button>
-
               }
 
             </div>
