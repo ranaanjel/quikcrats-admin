@@ -810,7 +810,7 @@ function TableCellViewerCategory({ item }: { item: Record<string, any> }) {
                 toast.error(value.message)
               }
             })
-            setDataChange(prev => {
+            setDataChange(() => {
               return { imageURL: "", bgColor: "" }
             })
           }}></DialogViewer>
@@ -1051,7 +1051,7 @@ function DialogViewer({ type, value, changes, onclickValue, setValue, disableTru
                   //TODO db call
                   setOpen(false)
                   console.log(offers)
-                  setOffers(prev => {
+                  setOffers( () => {
                     return {
                       price: 0,
                       quantity: 0,

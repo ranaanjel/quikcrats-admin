@@ -80,26 +80,26 @@ import axios from "axios"
 
 interface dataInterface { name: string, image: string, category: string, subcategory: string, regexValue: string }
 interface dataValue {
-              id: string,
-              imageURL: string,
-              disclaimer: string,
-              brandId: string,
-              productInfoId: {
-                shellLife:string,
-                storageTemperature:string,
-                container:string
-              },
-              primarySize: number,
-              quantity:number,
-              unitId: string,
-              secondaryUnitId: string,
-              conversion:number ,
-              secondarySize: number,
-              outOfStock: boolean,
-              comingSoon:boolean,
-              maxOrder:number,
-              regExp: string
-            }
+  id: string,
+  imageURL: string,
+  disclaimer: string,
+  brandId: string,
+  productInfoId: {
+    shellLife: string,
+    storageTemperature: string,
+    container: string
+  },
+  primarySize: number,
+  quantity: number,
+  unitId: string,
+  secondaryUnitId: string,
+  conversion: number,
+  secondarySize: number,
+  outOfStock: boolean,
+  comingSoon: boolean,
+  maxOrder: number,
+  regExp: string
+}
 
 export function DataTable() {
   const [itemList, setItemList] = React.useState<dataInterface[]>([]);
@@ -135,11 +135,11 @@ export function DataTable() {
     // getting all the items from the backend 
     fetch(BACKEND_URL + "items", { credentials: "include" }).then(async (m) => {
       let data = await m.json()
-      setItemList(prev => {
+      setItemList(() => {
         let newData = data.data.map((m: any) => ({ name: m.name, image: m.imageURL, category: m.categoryId, subcategory: m.subCategoryId, regexValue: m.regExp }));
         return newData;
       });
-      setFilterData(prev => {
+      setFilterData(() => {
         let newData = data.data.map((m: any) => ({ name: m.name, image: m.imageURL, category: m.categoryId, subcategory: m.subCategoryId, regexValue: m.regExp }));
         return newData;
       });
@@ -467,7 +467,7 @@ function IndividualCreate() {
               let [value] = Object.keys(m);
               let [key] = Object.values(m);
               return <SelectItem key={index} value={key}>{value}</SelectItem>
-            }): <SelectItem value={"null"} > select the category first</SelectItem> }
+            }) : <SelectItem value={"null"} > select the category first</SelectItem>}
           </SelectContent>
         </Select>
       </div>
@@ -506,13 +506,13 @@ function IndividualCreate() {
               <Button onClick={function () {
                 // sending the request to the backend
                 let data = brandRef.current?.value;
-                if(data?.trim() == "") {
+                if (data?.trim() == "") {
                   toast.error("can't be empty name");
                   return;
                 }
                 let url = BACKEND_URL + "createBrand";
-                axios.post(url, { data:data?.trim() }, { withCredentials: true }).then(n => {
-                  
+                axios.post(url, { data: data?.trim() }, { withCredentials: true }).then(n => {
+
                   let value = n.data;
 
                   if (value.success) {
@@ -824,32 +824,31 @@ function IndividualCreate() {
 
                   })
                 }
-              </div> : <div className="cursor-pointer" onClick={function (e) {
+              </div> : <div className="cursor-pointer" onClick={function () {
                 console.log(createState.name != "" && createState.brandId != "" && createState.categoryId != "" && createState.subCategoryId != "" && createState.unitId != "", createState.name != "", createState.brandId != "", createState.categoryId != "", createState.subCategoryId != "", createState.unitId != "")
-                console.log("hello world")
               }}>
                 please make sure the data has itemname at least name init, category, sub category, unit, brand
               </div>
             }
           </div>
           <DialogFooter>
-            <Button disabled={!createItemState} type="submit" variant={"default"} onClick={function() {
+            <Button disabled={!createItemState} type="submit" variant={"default"} onClick={function () {
               let url = BACKEND_URL + "individual";
-                axios.post(url, { data:createState }, { withCredentials: true }).then(n => {
-                  
-                  let value = n.data;
+              axios.post(url, { data: createState }, { withCredentials: true }).then(n => {
 
-                  if (value.success) {
-                    toast.info(value.message)
-                    setTimeout(function () {
-                      location.reload();
-                    }, 1000)
-                  } else {
-                    toast.error(value.message)
-                  }
-                })
-              
-              
+                let value = n.data;
+
+                if (value.success) {
+                  toast.info(value.message)
+                  setTimeout(function () {
+                    location.reload();
+                  }, 1000)
+                } else {
+                  toast.error(value.message)
+                }
+              })
+
+
             }}>Create Item</Button>
             <DialogClose asChild>
               <Button variant="outline">Cancel</Button>
@@ -1100,7 +1099,7 @@ function BulkCreate() {
       }
       else {
         for (var error of (check.error.issues.slice(0, 3))) {
-          console.log(createState.name, createState,eachRow[2], objecIdRef.current["brandlist"])
+          console.log(createState.name, createState, eachRow[2], objecIdRef.current["brandlist"])
           toast.error("Error has been occurred", {
             description: error.message + "  product name : " + createState.name,
           })
@@ -1276,24 +1275,25 @@ function BulkCreate() {
         <Button type="submit" onClick={async function () {
           let fileList = fileRef.current?.files;
 
-        
+
           if (fileList?.length == 0 || fileList == undefined) {
             toast.error("no file is selected")
             return;
           }
 
-   
+
 
           let data = await fileList[0].text();
           let formattedData = data.split("\n").filter(m => m);
           // let tableHeader = formattedData[0].split(",,");
           let tableRow = formattedData.slice(1,).map(m => m.split(";").filter(m => {
-            
-            if(m == "0") {
+
+            if (m == "0") {
               return false;
             }
-            
-            return m}).map(m => m.trim()))
+
+            return m
+          }).map(m => m.trim()))
           //first check i.e either 14 and 17 values
 
           console.log(tableRow)
@@ -1359,7 +1359,7 @@ function BulkCreate() {
                 return <AccordionItem value={String(key + 1)} key={key}>
                   <AccordionTrigger>{m.name}</AccordionTrigger>
                   <AccordionContent className="flex flex-col gap-1   text-balance">
-                    
+
                     {
                       dataFinal.map(([key, value]) => {
 
@@ -1383,44 +1383,44 @@ function BulkCreate() {
           <DialogClose asChild>
             <Button variant="outline">Cancel</Button>
           </DialogClose>
-          <Button onClick={ async () => {
+          <Button onClick={async () => {
             setUploading(true)
             let url = BACKEND_URL + "bulk";
 
-              try{
-                for(var i = 0 ; i < finalData.length ; i+=20) {
+            try {
+              for (var i = 0; i < finalData.length; i += 20) {
 
                 let startValue = i;
-                let endValue = i+20;
+                let endValue = i + 20;
 
                 let dataToSend = finalData.slice(startValue, endValue);
                 console.log(dataToSend)
-                let value =  (await axios.post(url, { data:dataToSend }, { withCredentials: true })).data;
-                  if (value.success) {
-                    toast.info(value.message) 
-                    toast.info(value.alreadyInDb.join(",  are in the databse already"))
-                  } else {
-                    toast.error(value.message)
-                  } 
+                let value = (await axios.post(url, { data: dataToSend }, { withCredentials: true })).data;
+                if (value.success) {
+                  toast.info(value.message)
+                  toast.info(value.alreadyInDb.join(",  are in the databse already"))
+                } else {
+                  toast.error(value.message)
+                }
 
-              } 
-              
-              setUploading(false)
-              }catch(err) {
-
-                setUploading(false)
               }
-              setTimeout(function () {
-                      location.reload();
-                    }, 2000)
-              
-              setSubmitFinalData(false)
+
+              setUploading(false)
+            } catch (err) {
+
+              setUploading(false)
+            }
+            setTimeout(function () {
+              location.reload();
+            }, 2000)
+
+            setSubmitFinalData(false)
 
           }} type="submit">Confirm</Button>
         </DialogFooter>
-      {uploading&&<div className="bg-white/50 absolute h-full w-full top-0 left-0 flex flex-col text-gray-800  justify-center items-center">
-        <img src="https://ik.imagekit.io/auctvhqov/_loading-page__ZRwvOeWXM.gif?updatedAt=1755440325666" className="object-cover h-[200px] w-[200px]" alt="uploading"/>
-      </div>}
+        {uploading && <div className="bg-white/50 absolute h-full w-full top-0 left-0 flex flex-col text-gray-800  justify-center items-center">
+          <img src="https://ik.imagekit.io/auctvhqov/_loading-page__ZRwvOeWXM.gif?updatedAt=1755440325666" className="object-cover h-[200px] w-[200px]" alt="uploading" />
+        </div>}
       </DialogContent>
 
     </Dialog>
@@ -1437,21 +1437,23 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
   const classInputValue = "focus:outline-none focus:border underline"
   const editCheckRef = React.useRef<HTMLButtonElement>(null);
   const dataChange = React.useRef<Record<string, any>>({});
-  const [changes, setChanges] = React.useState<dataValue>({id: "",
-              imageURL:  "",
-              disclaimer: "",
-              brandId: "",
-              productInfoId: { shellLife: "", container: "", storageTemperature: "" },
-              primarySize:  0,
-              quantity:  0,
-              unitId: "",
-              secondaryUnitId: "",
-              conversion:  0,
-              secondarySize:  0,
-              outOfStock: false,
-              comingSoon: false,
-              maxOrder:  0,
-              regExp: ""})
+  const [changes, setChanges] = React.useState<dataValue>({
+    id: "",
+    imageURL: "",
+    disclaimer: "",
+    brandId: "",
+    productInfoId: { shellLife: "", container: "", storageTemperature: "" },
+    primarySize: 0,
+    quantity: 0,
+    unitId: "",
+    secondaryUnitId: "",
+    conversion: 0,
+    secondarySize: 0,
+    outOfStock: false,
+    comingSoon: false,
+    maxOrder: 0,
+    regExp: ""
+  })
   const [brandValue, setBrandValue] = React.useState<string>(item.brandId);
   const [firstUnitValue, setFirstUnitValue] = React.useState<string>(item.unitId);
   const [secondaryUnitValue, setSecondaryUnitValue] = React.useState<string>(item.secondaryUnitId);
@@ -1518,8 +1520,8 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
               <input className={classInputValue} onChange={function (e) {
                 dataChange.current["imageURL"] = (e.target.value).trim();
                 setChanges(prev => {
-  
-                  return {...prev, imageURL:e.target.value.trim()}
+
+                  return { ...prev, imageURL: e.target.value.trim() }
                 })
               }} disabled={savedValue} defaultValue={item?.["imageURL"]} />
             </div>
@@ -1528,7 +1530,7 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
               <input className={classInputValue} onChange={function (e) {
                 dataChange.current["disclaimer"] = (e.target.value).trim();
                 setChanges(prev => {
-                  return {...prev, disclaimer:e.target.value.trim()}
+                  return { ...prev, disclaimer: e.target.value.trim() }
                 })
               }} disabled={savedValue} defaultValue={item?.["disclaimer"]} />
             </div>
@@ -1548,27 +1550,27 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
                     dataChange.current["productInfoId"] = {}
                   }
 
-                  
+
                   dataChange.current["productInfoId"]["shellLife"] = (e.target.value).trim();
                   setChanges(prev => {
-  
-                  return {...prev, productInfoId:{...prev.productInfoId, shellLife:(e.target.value).trim()}}
-                })
+
+                    return { ...prev, productInfoId: { ...prev.productInfoId, shellLife: (e.target.value).trim() } }
+                  })
                   console.log(dataChange.current)
                 }} disabled={savedValue} defaultValue={item?.["productInfoId"]["shellLife"]} />
               </Label>
               <Label>
                 Storage Temperature
-                <input className={classInputValue}  onChange={function (e) {
+                <input className={classInputValue} onChange={function (e) {
                   if (!dataChange.current["productInfoId"]) {
                     dataChange.current["productInfoId"] = {}
                   }
-                
+
                   dataChange.current["productInfoId"]["storageTemperature"] = (e.target.value).trim();
                   setChanges(prev => {
-  
-                  return {...prev, productInfoId:{...prev.productInfoId, storageTemperature:(e.target.value).trim()}}
-                })
+
+                    return { ...prev, productInfoId: { ...prev.productInfoId, storageTemperature: (e.target.value).trim() } }
+                  })
                   console.log(dataChange.current)
                 }} disabled={savedValue} defaultValue={item?.["productInfoId"]["storageTemperature"]} />
               </Label>
@@ -1581,9 +1583,9 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
 
                   dataChange.current["productInfoId"]["container"] = (e.target.value).trim();
                   setChanges(prev => {
-  
-                  return {...prev, productInfoId:{...prev.productInfoId, container:(e.target.value).trim()}}
-                })
+
+                    return { ...prev, productInfoId: { ...prev.productInfoId, container: (e.target.value).trim() } }
+                  })
                 }} disabled={savedValue} defaultValue={item?.["productInfoId"]["container"]} />
               </Label>
             </div>
@@ -1594,8 +1596,8 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
 
                 dataChange.current["quantity"] = Number((e.target.value).trim());
                 setChanges(prev => {
-  
-                  return {...prev,quantity: Number((e.target.value).trim()),primarySize: Number((e.target.value).trim()) }
+
+                  return { ...prev, quantity: Number((e.target.value).trim()), primarySize: Number((e.target.value).trim()) }
                 })
 
               }} disabled={savedValue} defaultValue={item?.["primarySize"]} />
@@ -1627,9 +1629,9 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
 
 
                 dataChange.current["secondarySize"] = Number((e.target.value).trim());
-                  setChanges(prev => {
-  
-                  return {...prev,secondarySize: Number((e.target.value).trim()) }
+                setChanges(prev => {
+
+                  return { ...prev, secondarySize: Number((e.target.value).trim()) }
                 })
 
               }} disabled={savedValue} placeholder={item?.["secondaryUnitId"] || "no value in db"} defaultValue={item?.["secondarySize"]} />
@@ -1640,9 +1642,9 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
 
 
                 dataChange.current["conversion"] = Number((e.target.value).trim());
-                 setChanges(prev => {
-  
-                  return {...prev,conversion: Number((e.target.value).trim()) }
+                setChanges(prev => {
+
+                  return { ...prev, conversion: Number((e.target.value).trim()) }
                 })
               }} disabled={savedValue} placeholder={item?.["secondaryUnitId"] || "no value in db"} defaultValue={item?.["conversion"]} />
             </div>
@@ -1701,9 +1703,9 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
 
               <Select defaultValue={item.outOfStock ? "true" : "false"} onValueChange={(value) => {
                 dataChange.current["outOfStock"] = value == "true" ? true : false;
-                 setChanges(prev => {
-  
-                  return {...prev,outOfStock: value == "true" ? true : false }
+                setChanges(prev => {
+
+                  return { ...prev, outOfStock: value == "true" ? true : false }
                 })
               }} disabled={savedValue}>
                 <SelectTrigger id="outOfStock" className="w-full">
@@ -1722,8 +1724,8 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
               <Select defaultValue={item.comingSoon ? "true" : "false"} onValueChange={value => {
                 dataChange.current["comingSoon"] = value == "true" ? true : false;
                 setChanges(prev => {
-  
-                  return {...prev,comingSoon: value == "true" ? true : false }
+
+                  return { ...prev, comingSoon: value == "true" ? true : false }
                 })
               }} disabled={savedValue}>
                 <SelectTrigger id="comingsoon" className="w-full">
@@ -1740,11 +1742,11 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
             <div className="flex flex-col gap-3">
               <div className="text-xl">Max Order Unit</div>
               <input type="number" onChange={function (e) {
-                
+
                 dataChange.current["maxOrder"] = Number((e.target.value).trim());
                 setChanges(prev => {
-  
-                  return {...prev,maxOrder:Number((e.target.value).trim()) }
+
+                  return { ...prev, maxOrder: Number((e.target.value).trim()) }
                 })
               }} className={classInputValue} disabled={savedValue} defaultValue={item?.["maxOrder"]} />
             </div>
@@ -1753,7 +1755,7 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
               <input className={classInputValue} onChange={function (e) {
                 dataChange.current["regExp"] = String((e.target.value).trim());
                 setChanges(prev => {
-                  return {...prev,regExp:String((e.target.value).trim()) }
+                  return { ...prev, regExp: String((e.target.value).trim()) }
                 })
               }} disabled={savedValue} defaultValue={item?.["regExp"]} />
             </div>
@@ -1783,7 +1785,7 @@ function TableCellViewer({ item }: { item: Record<string, any> }) {
 
 
 
-function DialogViewer({ type, value, changes, onclickValue, setValue, disableTrue, itemId, unitId, brandId, secondaryUnitId }: { brandId?: string, secondaryUnitId?: string, itemId?: string, unitId?: string, type: "alert" | "confirm" | "offers" | "unit" | "submit" | "brand", value?: string, changes?: dataValue|any, onclickValue?: () => void, setValue?: React.Dispatch<React.SetStateAction<any>>, disableTrue?: boolean }) {
+function DialogViewer({ type, value, changes, onclickValue, setValue, disableTrue, itemId, unitId, brandId, secondaryUnitId }: { brandId?: string, secondaryUnitId?: string, itemId?: string, unitId?: string, type: "alert" | "confirm" | "offers" | "unit" | "submit" | "brand", value?: string, changes?: dataValue | any, onclickValue?: () => void, setValue?: React.Dispatch<React.SetStateAction<any>>, disableTrue?: boolean }) {
 
   const [brandList, setBrandList] = React.useState<string[]>([]);
   const [unitList, setUnitList] = React.useState<string[]>([]);
@@ -1887,11 +1889,11 @@ function DialogViewer({ type, value, changes, onclickValue, setValue, disableTru
           </div>
           <div className="flex w-full justify-between">
             <span>outOfStock</span>
-            <span>{changes?.["outOfStock"]?"true":"false"}</span>
+            <span>{changes?.["outOfStock"] ? "true" : "false"}</span>
           </div>
           <div className="flex w-full justify-between">
             <span>comingSoon</span>
-            <span>{changes?.["comingSoon"]?"true":"false"}</span>
+            <span>{changes?.["comingSoon"] ? "true" : "false"}</span>
           </div>
           <div className="flex w-full justify-between">
             <span>maxOrder</span>
@@ -1907,7 +1909,7 @@ function DialogViewer({ type, value, changes, onclickValue, setValue, disableTru
             <Button variant="outline">Cancel</Button>
           </DialogClose>
           <Button onClick={function () {
-            if(!changes) {
+            if (!changes) {
               return;
             }
             if (onclickValue) onclickValue()
@@ -1940,9 +1942,9 @@ function DialogViewer({ type, value, changes, onclickValue, setValue, disableTru
             console.log(dataToSend)
             let url = BACKEND_URL + "individual ";
 
-            axios.put(url, {data:dataToSend}, { withCredentials: true }).then(value => {
+            axios.put(url, { data: dataToSend }, { withCredentials: true }).then(value => {
               let data = value.data;
-              
+
               if (data.success) {
                 toast.info(data.message + ' refreshing')
                 setTimeout(function () {
@@ -2066,12 +2068,12 @@ function DialogViewer({ type, value, changes, onclickValue, setValue, disableTru
               <Button onClick={function () {
 
                 let data = brandRef.current?.value;
-                if(data?.trim() == "") {
+                if (data?.trim() == "") {
                   toast.error("empty string error")
                   return;
                 }
                 let url = BACKEND_URL + "createBrand";
-                axios.post(url, { data:data?.trim() }, { withCredentials: true }).then(n => {
+                axios.post(url, { data: data?.trim() }, { withCredentials: true }).then(n => {
                   let value = n.data;
                   if (value.success) {
                     toast.info(value.message)
@@ -2182,7 +2184,7 @@ function DialogViewer({ type, value, changes, onclickValue, setValue, disableTru
 
                       toast.success(value.message)
 
-                      setOffers(prev => {
+                      setOffers(() => {
                         return {
                           price: 0,
                           quantity: 0,
